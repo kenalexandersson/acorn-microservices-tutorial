@@ -31,4 +31,4 @@ Eclipse:: https://projectlombok.org/setup/eclipse
 https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=sv
 
 == Clone this project from GitHub
-`git clone ssh://git@git.got.jeppesensystems.com:10022/ken.alexandersson/microservicestutorial.git`
+`git clone https://github.com/kenalexandersson/acorn-microservices-tutorial.git`
