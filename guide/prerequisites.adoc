@@ -1,0 +1,34 @@
+:toc:
+:imagesdir: images
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+= Prerequisites for participants
+
+== Bring your computer
+You will need a computer, obviously, since you will do some coding. Please bring your own, or hook up with a mate.
+
+Anyway you choose, please make sure to fix the below before turning up at the session.
+
+== Install a decent editor
+You will need a fairly decent editor to help out during your coding, preferably one with content assist and auto-completion. Choose one below.
+
+If you are working regularly with Java, you will probably already have IntelliJ or Eclipse, which is fine. Netbeans will probably work as well I guess (never used myself so really don't know).
+
+If you do not have any of the above, please download and install IntelliJ Community, which is free.
+
+== Install Lombok plugin to your IDE
+IntelliJ:: File -> Settings... -> Plugins, then search for _Lombok Plugin_
+Eclipse:: https://projectlombok.org/setup/eclipse
+
+== Chrome with JSON Formatter plugin
+https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=sv
+
+== Clone this project from GitHub
+`git clone ssh://git@git.got.jeppesensystems.com:10022/ken.alexandersson/microservicestutorial.git`

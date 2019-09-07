@@ -1,0 +1,25 @@
+= Spring Cloud
+:toc:
+:imagesdir: guide/images
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+Welcome to the microservices tutorial at Acorn.
+
+== Prerequisites
+[NOTE]
+Things you should do before the session: <<guide/prerequisites.adoc#,Prerequisites>>
+
+== Tutorial
+Here is the entry point to the tutorial we will do in the session
+
+[IMPORTANT]
+Do not start doing the tutorial in advance! Wait until you are physically seated in the classroom!
+
+<<guide/microservices-1.adoc#,Tutorial: Microservices>>
