@@ -36,6 +36,9 @@ IntelliJ:: File -> Settings... -> Plugins, then search for _Lombok Plugin_
 Eclipse:: https://projectlombok.org/setup/eclipse
 Netbeans:: https://projectlombok.org/setup/netbeans
 
+=== Install Maven
+You will need Maven (a build and dependency managemnt tool) during the tutorial. Please download and install through https://maven.apache.org/download.cgi
+
 === JSON viewer plugin for web browser
 The output from the running application will be on JSON format, so make sure that your browser can present it somewhat better than just a one line text blob.
 
