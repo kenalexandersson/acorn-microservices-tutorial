@@ -2,6 +2,14 @@
 :toc: left
 :imagesdir: images
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 In this tutorial you will focus on developing an application that will run in an environment using an assorted set of microservices patterns. The main purpose is to highlight how Spring Cloud helps in such an environment, to get an understanding of how it all works.
 
 The tutorial is purposely designed to hold your hand and show you step by step what to do. The main goal is not to challenge your problem solving skills, instead we want to focus on presenting Spring Cloud concepts in small chunks, eventually leading up to a working application.
