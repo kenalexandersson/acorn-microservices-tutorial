@@ -44,6 +44,10 @@ At the core of a https://maven.apache.org/[Maven] project is the `pom.xml` file 
 
 In the projects we are going to build there will be several dependencies to Spring Cloud components.
 
+A Maven project is built by executing the command `mvn clean install`, which will automatically download all dependencies specified (and all dependencies these first dependencies in turn may require). This can take a while, like a minute or two. The download will only happen if any dependencies are missing on your computer, so the next time you build the console output will not be quite so busy as the first time.
+
+The downloaded dependencies are typically stored under a directory named `.m2` in your user directory.
+
 == Spring Initializr
 
 Spring Boot provides a tool for quickly setting up a base Maven project with dependencies to various Spring components, which can be searched for and added to project in a wizard-like manner. https://start.spring.io/[Spring Initializr] basically creates a `pom.xml` file for you with everything needed for running the selected components.
