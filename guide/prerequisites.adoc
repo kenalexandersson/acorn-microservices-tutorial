@@ -11,24 +11,40 @@ endif::[]
 
 = Prerequisites for participants
 
-== Bring your computer
+== Prepare your computer
 You will need a computer, obviously, since you will do some coding. Please bring your own, or hook up with a mate.
 
-Anyway you choose, please make sure to fix the below before turning up at the session.
+Whatever you choose, please make sure to fix the below before turning up at the session.
 
-== Install a decent editor
-You will need a fairly decent editor to help out during your coding, preferably one with content assist and auto-completion. Choose one below.
+=== Install a decent editor
+A fairly decent editor is a must to help you out during coding, preferably one with content assist and auto-completion. Choose one below.
 
-If you are working regularly with Java, you will probably already have IntelliJ or Eclipse, which is fine. Netbeans will probably work as well I guess (never used myself so really don't know).
+If you are working regularly with Java you will probably already have IntelliJ or Eclipse, which is fine. Netbeans will probably work as well I guess (never used it myself so really I don't know).
 
-If you do not have any of the above, please download and install IntelliJ Community, which is free.
+If you do not have any of the above, it is recommended to download and install IntelliJ Community, which is free.
 
-== Install Lombok plugin to your IDE
+IntelliJ:: https://www.jetbrains.com/idea/download
+
+Eclipse Spring Tools:: If you are using Eclipse, make sure to have https://www.eclipse.org/community/eclipse_newsletter/2018/february/springboot.php[Spring Tools for Eclipse IDE] installed.
+
+Netbeans Spring boot plugin:: If you are using Netbeans, make sure to have http://plugins.netbeans.org/plugin/67888/nb-springboot[Netbeans Spring boot plugin] installed.
+
+=== Install Lombok plugin to your IDE
+Lombok will be used during in the tutorial, it helps reduce boilerplate coding such as getters and setter (amongst others). There are plugins for each IDE so they can understand and properly display Lombok constructs without annoying red lines or other error markings.
+
 IntelliJ:: File -> Settings... -> Plugins, then search for _Lombok Plugin_
 Eclipse:: https://projectlombok.org/setup/eclipse
+Netbeans:: https://projectlombok.org/setup/netbeans
 
-== Chrome with JSON Formatter plugin
-https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=sv
+=== JSON viewer plugin for web browser
+The output from the running application will be on JSON format, so make sure that your browser can present it somewhat better than just a one line text blob.
 
-== Clone this project from GitHub
-`git clone https://github.com/kenalexandersson/acorn-microservices-tutorial.git`
+Chrome:: https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=sv[Chrome JSON formatter]
+Firefox:: Newer versions of Firefox, from version 53 and onwards, have a JSON viewer incorporated by default.
+
+=== Clone this project from GitHub
+And finally, clone this project to your computer since we will use it as a base for the tutorial.
+
+`git clone https://github.com/kenalexandersson/acorn-microservices-tutorial`
+
+Or https://github.com/kenalexandersson/acorn-microservices-tutorial/archive/master.zip[download it as zip] and extract the content to a location of your choice
