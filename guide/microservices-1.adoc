@@ -30,7 +30,7 @@ Business components::
 * Web API
 * Items Service
 
-image::schematic-overview.jpg[]
+image::schematic-overview.png[]
 
 We will explain more about each component when we start working on them, but before getting started there is something to be said about _Maven_ and also _Spring Initializr_
 
@@ -55,5 +55,30 @@ Spring Boot provides a tool for quickly setting up a base Maven project with dep
 image::initializr.png[]
 
 You will use this tool when creating the components in this tutorial, which we incidentally will be start doing right now. Let's begin with the Config Server.
+
+== Items Service
+asdasd
+
+[quote]
+____
+. Go to https://start.spring.io/
+. Enter the following values in fields:
+.. `Group:` com.acorn.tutorial
+.. `Artifact:` items-service
+. Add dependencies (search for them and select):
+.. Spring Data JPA
+.. Spring Web
+.. Lombok
+.. Spring Boot Actuator
+. Click `Generate the project`
+. Open the resulting zip and copy the items-service directory to the root of the project (acorn-microservices-tutorial)
+____
+
+Now we need to make the copied project to a child-project of the intitial maven project, this means that it is time for edit a couple of pom.xml files.
+
+[quote]
+____
+. Open
+____
 
 == Config Server
