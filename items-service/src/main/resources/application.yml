@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: items-service
+
+logging:
+  file: /tmp/codingsession/logs/items-service.log
+
+server:
+  port: 8080
