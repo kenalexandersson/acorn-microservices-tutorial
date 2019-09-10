@@ -332,13 +332,13 @@ public class Item {
 }
 ----
 +
-Here is a short description of the annotations if you are not familiar with all of them.
+Here is a short description of the annotations if you are not familiar with them.
 +
 |===
 |Annotation |Description
 
 |@Data
-|Lombok-annotation, does generate getters/setters, toString, equals, hashcode, and a required args constructor
+|Lombok-annotation, does generate getters/setters, toString, equals, hashcode, and a all args constructor
 
 |@NoArgsConstructor
 |Lombok-annotation, creates a no arguments constructor, which is needed by JPA.
@@ -350,15 +350,15 @@ Here is a short description of the annotations if you are not familiar with all 
 |JPA-annotation, basically defines the identity of the entity, which will become the primary key in database.
 
 |@GeneratedValue
-|JPA-annotation, tells which strategy to use when generating identifier values. _GenerationType.AUTO_ means that we delegate to the JPA-provider (in our case Hibernate) to decide which strategy to use.
+|JPA-annotation, tells which strategy to use when generating identifier values. _GenerationType.AUTO_ means that we let the JPA-provider (in our case Hibernate) decide which strategy to use.
 |===
 ____
 
 ==== Repository class
-Next up is to add the class that will make storing items in database possible.
+Next to do is to add the repository class that will help us to store items in the database.
 [quote]
 ____
-. Create a new package under `items-service/src/main/java/com/acorn/tutorial/itemsservice`, name it `repository`
+. Create a new package `items-service/src/main/java/com/acorn/tutorial/itemsservice/repository`
 . Add a file named `ItemRepository.java` with the below content:
 +
 [source,java]
@@ -370,18 +370,18 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 ----
 ____
 
-This is actually enough code for making Spring Data JPA setup the database for handling _Item_ objects. The Spring automagic kicks in here. Just the simple act of having the dependencies `org.springframework.boot:spring-boot-starter-data-jpa` and `com.h2database:h2` brought in to the project's classpath, will allow Spring Data JPA to read our entity class and setup the database with needed tables etc.
+This is actually enough code for making Spring Data JPA setup the database for handling _Item_ objects. The Spring automagic kicks in here. Just the simple act of having the dependencies `org.springframework.boot:spring-boot-starter-data-jpa` and `com.h2database:h2` brought in to the project's classpath, will allow Spring Data JPA to read our entity class and setup the database with the needed table.
 
 You can check this for yourself by starting the application, then browse to http://localhost:8080/h2-console, use JDBC URL: jdbc:h2:mem:testdb and log in using User _sa_ and no password:
 
 image::H2Console.png[]
 
-Once logged in you should be able to see a listing of database tables and more.
+Once logged in you should be able to see a listing of database tables.
 
 [TIP]
 This is not a tutorial in using Spring Data JPA so we will leave it without deeper explanation, but for those interested in details, please see https://dzone.com/articles/spring-data-jpa-1 or visit the official reference at https://docs.spring.io/spring-data/jpa/docs/current/reference/html/
 
-One final automagical thing before leaving the persistence area for this time. I would be nice if we could have some dummy data loaded into the system. This can be achieved simply adding a file named `src/main/resources/data.sql` and add a couple of INSERT statements into it:
+There is one final automagic thing to do before we leave the persistence topic for this time. It would be nice if we could have some dummy data loaded into the system. This can be achieved by simply adding a file named `src/main/resources/data.sql` containing a couple of INSERT statements:
 
 [quote]
 ____
@@ -396,21 +396,21 @@ insert into item(id, name) values(3, 'Knife');
 ----
 ____
 
-That's it. Restart the application, log in to http://localhost:8080/h2-console again and run
+That's it! Restart the application, log in to http://localhost:8080/h2-console again and run
 
 [source,sql]
 SELECT * FROM ITEM
 
-Now you should see what you think you should see. ;)
+Now you should see what you expect to see. ;)
 
-So now we do have a database storing _Item_ objects, and the application is connected to it. Spring Data JPA will give us a set of pre-existing methods for  getting data from the database. We will start to use these in the next section.
+So now we do have a database storing _Item_ objects, and the application is connected to it. Spring Data JPA will give us a set of pre-existing methods for  getting data from the database. We will start using these in the next section.
 
 ==== RestController class
 The purpose of this class is to provide a REST-API to the surrounding microservices environment.
 
 [quote]
 ____
-. Create a new package under `items-service/src/main/java/com/acorn/tutorial/itemsservice`, name it `web`
+. Create package `items-service/src/main/java/com/acorn/tutorial/itemsservice/web`
 . Add a file named `ItemServiceController.java` with the below content:
 +
 [source,java]
@@ -432,8 +432,7 @@ public class ItemsServiceController {
 
     @GetMapping(path = "/items", produces = "application/json")
     public List<ItemDto> getAllItems() {
-        return itemRepository.findAll()
-                .stream()
+        return itemRepository.findAll().stream()
                 .map(this::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -456,13 +455,18 @@ public class ItemsServiceController {
 ----
 ____
 
-The above code creates a Spring REST controller providing the resources `GET /items` and `GET /items/{id}`. The previously created `Item` and `ItemRepository` classes are used here. Pay close attention to the `itemRepository.findAll()` and `itemRepository.findById(id)` methods, which are provided ot us through Spring Data JPA.
+The above code creates a Spring REST controller providing the resource endpoints `GET /items` and `GET /items/{id}`. The previously created `Item` and `ItemRepository` classes are used here. Pay close attention to the `itemRepository.findAll()` and `itemRepository.findById(id)` methods, which are provided to us through Spring Data JPA.
 
-Right now the code does not compile, a couple of classes are still missing so let's create them also.
+Right now the code does not compile, a couple of classes are still missing. Let's create them while we are at it.
 
 ==== ItemDto
-This is just a POJO that represents the JSON structure to send out from REST API.
+The ItemDto is just a POJO that represents the JSON structure to send out to callers of the REST API.
 
+[quote]
+____
+. Create file `items-service/src/main/java/com/acorn/tutorial/itemsservice/web/ItemDto.java`
+. Add this code:
++
 [source,java]
 ----
 @Data
@@ -478,5 +482,77 @@ public class ItemDto {
     }
 }
 ----
+____
+
+==== ItemNotFoundException and ItemNotFoundAdvice
+The final classes to add in order to get everything under control are the `ItemNotFoundException` class that is thrown when an `Item` cannot be found, and the `ItemNotFoundAdvice` class that will handle the exception and produce the appropriate response status code to send back to client.
+
+[quote]
+____
+. Create new file `items-service/src/main/java/com/acorn/tutorial/itemsservice/web/ItemNotFoundException.java`
++
+[source,java]
+----
+public class ItemNotFoundException extends RuntimeException {
+    public ItemNotFoundException(Long id) {
+        super(String.format("Failed to find item with id: %d", id));
+    }
+}
+----
+____
+
+[quote]
+____
+. Create new file `items-service/src/main/java/com/acorn/tutorial/itemsservice/web/ItemNotFoundAdvice.java`
++
+[source,java]
+----
+@ControllerAdvice
+public class ItemNotFoundAdvice {
+
+    @ResponseBody
+    @ExceptionHandler(ItemNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String itemNotFoundHandler(ItemNotFoundException ex) {
+        return ex.getMessage();
+    }
+}
+----
+____
+
+This work pretty much sums it up. We now have our small and astoundingly simple microservice in place, ready to serve items to interested clients.
+
+Please start the application and verify that it works by accessing it via
+
+* http://localhost:8080/items
+* http://localhost:8080/items/1
+* http://localhost:8080/items/2
+* http://localhost:8080/items/3
+* http://localhost:8080/items/99
+
+You should be able to see the all items from database (unless item with number 99, since it is not there).
+
+[source,json]
+----
+[
+    {
+        "id": 1,
+        "name": "Spoon",
+        "port": 8080
+    },
+    {
+        "id": 2,
+        "name": "Fork",
+        "port": 8080
+    },
+    {
+        "id": 3,
+        "name": "Knife",
+        "port": 8080
+    }
+]
+----
+
+Let us take a step back and assess where we are right now. We have created a microservice with some simple features. It is fun that it works, but so far we haven't used any of the tools in Spring Cloud to start leveraging the microservices patterns we are interested in.
 
 == Config Server
