@@ -17,22 +17,27 @@ The tutorial is purposely designed to hold your hand and show you step by step w
 With that said, don’t blindly just copy and paste the code without reflecting on it. The tutorial will try to make you think about things here and there, but if you find any step confusing or lacking in description, please bring it up during the session so we can discuss it.
 
 == Overview of the application components
-We are going to build a set of Java https://spring.io/projects/spring-boot[Spring Boot] components using https://spring.io/projects/spring-cloud[Spring Cloud] tools. Some of these components will implement common microservices patterns used in distributed systems, such as centralized configuration and service discovery, and are hence of a more supportive nature:
-
-Supporting components::
-* Config Server
-* Gateway
-* Service Discovery and Client Loadbalancer
-
-Along with the above we also need microservices that takes the role as our business components, the ones serving data that clients are interested in:
-
-Business components::
-* Web API
-* Items Service
-
 image::schematic-overview.png[]
 
-We will explain more about each component when we start working on them, but before getting started there is something to be said about _Maven_ and also _Spring Initializr_
+We are going to build a set of Java https://spring.io/projects/spring-boot[Spring Boot] components using https://spring.io/projects/spring-cloud[Spring Cloud] tools. Some of these components will implement common microservices patterns used in distributed systems, these are hence of a more supportive nature.
+
+Config Server:: The Config server's responsibility is to be the central for configuration of all other components.
+
+Gateway:: The Gateway is the single point entrance to the outside world. Clients from the outside must go through the Gateway to access the inner services. A key role of the Gateway is to route incoming requests to the right service.
+
+Service Discovery and Client Loadbalancer:: All services in the application will register to Service Discovery server. This allow Spring Cloud components to automatically find each other. The Client Load Balancer will help in evenly distributing requests to multiple running instances of the same microservice.
+
+Along with the above we also need microservices that takes the role as our business components, the ones serving data that clients are interested in.
+
+Items Service:: This service is responsible for handling _items_. It stores items and can retrieve information about items on demand.
+
+Reviews Service:: Manages customer _reviews_ regarding _items_. It stores reviews and can retrieve information about reviews on demand.
+
+Web API:: Acts as an aggregating API, it knows what services to call in order to aggregate certain information (in our case from _items service_ and _reviews service_).
+
+
+
+We will explain more about each component when we start working on them, but before getting started with that, there is something to be said about _Maven_ and also _Spring Initializr_
 
 == Maven
 Maven is a build and dependency management tool widely used in the Java echo system.
@@ -40,9 +45,9 @@ Maven is a build and dependency management tool widely used in the Java echo sys
 [NOTE]
 If you have been working with Java you can stop reading now, we are not going to say anything new on the matter. But please read on if you are not so familiar with Maven since it may save one or two WTF:s along the way.
 
-At the core of a https://maven.apache.org/[Maven] project is the `pom.xml` file (stands for Project Object Model), which is an XML-representation of how the project is setup. In here you specify what should be built in the project, and all project dependencies to other components (internal or third-party) is declared here.
+At the core of a https://maven.apache.org/[Maven] project is the `pom.xml` file (stands for Project Object Model), which is an XML-representation of how the project is setup. In here you specify what should be built in the project, and all project dependencies to other components (internal or third-party) are declared here.
 
-In the projects we are going to build there will be several dependencies to Spring Cloud components.
+The projects we are going to build will have dependencies to several Spring Cloud components.
 
 A Maven project is built by executing the command `mvn clean install`, which will automatically download all dependencies specified (and all dependencies these first dependencies in turn may require). This can take a while, like a minute or two. The download will only happen if any dependencies are missing on your computer, so the next time you build, the console output will not be quite so busy as the first time.
 
@@ -54,7 +59,9 @@ Spring Boot provides a tool for quickly setting up a base Maven project with dep
 
 image::initializr.png[]
 
-You will use this tool when creating the components in this tutorial, which we incidentally will be start doing right now. Let's begin with the first service, the Items Service.
+You will use this tool when creating the components in this tutorial.
+
+Which we incidentally will be start doing right now. Let's begin with the first service, the _Items Service_.
 
 == Items Service
 asdasd
