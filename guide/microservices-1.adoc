@@ -695,8 +695,14 @@ Expected outcome after running the command:
 
 === Configuring the Config Server
 
-Yada yada
+Even an application that manages configurations needs to be configured. A Spring Config Server does not require overly much configuration to be functional, at least not when you are good to go with the defaults.
 
+In our case, we basically just need to configure our Config Server to use the native file storage approach instead of git.
+
+[quote]
+____
+. Create file `config-server/src/main/resource/bootstrap.yml` and add the below content.
++
 .Content of bootstrap.yml
 [source,yml]
 ----
@@ -709,8 +715,8 @@ spring:
   profiles:
     active: native
 
-  # Setting the search location for "native" to directory "config" on classpath
-  # (the source config files will go under src/main/resources/config)
+  # Setting the search location to directory "config" on classpath for the "native" profile
+  # (the source config files that after build ends up in dir config will go under src/main/resources/config)
   cloud:
     config:
       server:
@@ -720,13 +726,12 @@ spring:
 server:
   port: 8888
 ----
+____
 
 === Running the application
+This far you should be able to start the server, albeit it doesn't do anything useful yet. Run the app by using one of these two options.
 
-Run the app by using one of these two options.
-
-Run from IDE:: Both IntelliJ and Eclipse can execute Spring Boot applications, which is the most convenient approach and recommended hereafter.
-+
+Run from IDE::
 IntelliJ: There should be a Run configuration named `ConfigServerApplication` in the Services pane. Mark it and press the green play-button to start the application. This will build and run the app.
 +
 image::config-server-in-services.png[]
