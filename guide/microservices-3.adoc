@@ -72,7 +72,7 @@ to
     <artifactId>reviews-service</artifactId>
 ----
 +
-Note that _groupId_ and _version_ attributes of items-service can be removed since this project now inherits these attributes from the parent pom.
+Note that _groupId_ and _version_ attributes of reviews-service can be removed since this project now inherits these attributes from the parent pom.
 +
 Also remove the `<properties>..</properties>, <dependencyManagement>..</dependencyManagement>` and `<build>..</build>` completely.
 
@@ -253,7 +253,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 Notice that the repository class defines two methods for retrieving reviews by type (in our case the type will be 'item').
 ____
 
-Some nice dummy data would be good to have. As you remember, this is achieved by added INSERT-statements into a file named `data.sql`
+Some nice dummy data would be good to have. As you remember, this is achieved by adding INSERT-statements into a file named `data.sql`
 
 [quote]
 ____
@@ -460,8 +460,8 @@ Take a look at the logs, the application should start fine.
 
 [NOTE]
 ====
-This means that we have our basic services for items and reviews in place.
+This means that we have our basic services for items and reviews in place. Good work so far, it is now time to sit back and contemplate where we are going with all this.
 ====
 
-<<microservices-4.adoc#,Nextup: WebApi>>
+<<microservices-4.adoc#,Nextup: Time for contemplation>>
 
