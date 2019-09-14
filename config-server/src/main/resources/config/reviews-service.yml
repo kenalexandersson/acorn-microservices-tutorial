@@ -1,0 +1,21 @@
+spring:
+  # Enabling h2 console, accessible at http://localhost:9090/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank))
+  h2:
+    console:
+      enabled: true
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        generate_statistics: false
+
+logging:
+  file: /tmp/codingsession/logs/reviews-service.log
+  level:
+    ROOT: INFO
+    org.hibernate.stat: INFO
+    org.hibernate.type: INFO
+
+server:
+  port: 9090

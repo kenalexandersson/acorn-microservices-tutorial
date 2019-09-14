@@ -23,6 +23,7 @@
     <modules>
         <module>config-server</module>
         <module>items-service</module>
+        <module>reviews-service</module>
     </modules>
 
     <dependencyManagement>
