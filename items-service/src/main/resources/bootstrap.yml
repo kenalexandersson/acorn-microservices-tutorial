@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: items-service
+  cloud:
+    config:
+      uri: http://localhost:6666
+      fail-fast: true
