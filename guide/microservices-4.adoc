@@ -10,11 +10,14 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-== Take a step back and look at the bigger picture
+== Take a step back and look at the picture
 Let's take some time and reflect upon things. We have an `items-service` and a `reviews-service` as core services in our application. They are built in Spring Boot, and both are utilizing Spring Cloud Config Server for getting configuration. The Config Server is in fact the only Spring Cloud tool used so far.
 
 [NOTE]
-Also worth noting is that the browser/client does call both services directly, which means that a client needs to be aware of where these are running and hence need to know the hostname and ports to use for accessing them.
+Also worth noting is that the browser/client does call the services directly, which means that a client needs to be aware of where these are running and hence need to know the hostname and ports to use for accessing them.
+
+.Current progress so far
+image::overview-progress-after-it-re-conf.png[]
 
 If we revisit the schematic overview from the beginning of the tutorial, we see that there is some distance to cover before we have all the tools in place:
 
@@ -44,15 +47,15 @@ https://samnewman.io/patterns/architectural/bff/
 ====
 
 === The need for service discovery
-The _WebApi_ component is our BFF for an imagined web application (we do not bother fixing a sibling BFF targeting mobile apps in this tutorial). If the WebApi is our BFF, then we are about to touch upon the very problem _Service Discovery_ is here to solve:
+The _WebApi_ component is our BFF for an imagined web application (we do not bother fixing a sibling BFF targeting mobile apps in this tutorial). If the WebApi is our BFF, then we are about to start touching upon the problem _Service Discovery_ is here to solve:
 
-Problem:: The WebApi must be configured with the addresses and ports where it should find relevant services. But what if these services goes up and down, sometimes starting up again possibly on another location? Or if several instances of the same service are started dynamically, how does this align with the concept of static configuration such as application.yml (i.e. where hostnames and ports would be hardcoded)?
-+
-The question is: How do clients determine the location (IP address and port) of services in an environment where addresses get assigned dynamically?
+Problem:: The WebApi must be configured with the addresses and ports where it should find relevant services. But what if these services goes up and down, sometimes starting up again possibly on another location? Or if several instances of the same service are started dynamically, how could this be handled in a static configuration such application.yml (i.e. where hostnames and ports would be hardcoded)?
+
+The answer is: It can't be handled in that way (at least without a truckload of hassle).
 
 Solution:: The Service Discovery microservices pattern aims at solving the above problem. When clients make requests (in our case to WebApi), the WebApi queries a service registry, and forwards the requests to available service instances obtained from the registry.
 +
-A prerequisite for this to work is that each service during startup must automatically register to the Service Discovery server. Each service must also notify the discovery service on shut down so they can be removed.
+Each service will during startup automatically register to the Service Discovery server. The server will remove services when they shuts down (or if they time out).
 
 === Road map
 Given the above musings, it makes sense to continue our implementation effort in this order.
@@ -62,17 +65,7 @@ Given the above musings, it makes sense to continue our implementation effort in
 * Create the WebApi component `webapi` which discovers the above services using the Service Discovery Server and then calls them
 
 == Service Discovery Server
-The idea behind a discovery server is to support a couple of central concepts.
-
-* Service Registration: The process of a service registering itself and it's location to the central registry. Usually it register it's host and port only, but can also provide arbitrary environment details if needed.
-
-* Service Discovery: The process of a client fetching information from the central registry to get knowledge about locations of services.
-
-Service instances are responsible for registering and deregistering themself with the service registry. Each service instance also sends heartbeat requests to prevent registration from expiring, which means that if heartbeats stops coming to the discovery server for a particular service, this service will eventually be removed.
-
-In this tutorial we are going use an implementation of Discovery Server named _Eureka_. Our next task is to create a project that uses it. When we are done with this section, there will be a Eureka instance up and running which `items-service` and `reviews-service` register themselves to.
-
-image::overview-4-service-discovery.png[]
+asdasd
 
 === Creating the project
 
@@ -94,12 +87,51 @@ ____
 ====
 Let's remove some autogenerated files we don't need, delete the following files from project:
 
-- service-discovery-server/.mvn (the whole dir)
-- service-discovery-server/.gitignore
-- service-discovery-server/HELP.md
-- service-discovery-server/mvnw
-- service-discovery-server/mvnw.cmd
+- items-service/.mvn (the whole dir)
+- items-service/.gitignore
+- items-service/HELP.md
+- items-service/mvnw
+- items-service/mvnw.cmd
 ====
+
+Edit the `pom.xml` in a similar fashion as we did for the item-service:
+[quote]
+____
+. Open `acorn-microservices-tutorial/reviews-service/pom.xml`
+. Change the reference to parent pom as follows:
++
+Change
++
+[source,xml]
+----
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.8.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.acorn.tutorial</groupId>
+    <artifactId>service-discovery-server</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+----
+to
++
+[source,xml]
+----
+    <parent>
+        <artifactId>acorn-microservices-tutorial</artifactId>
+        <groupId>com.acorn.tutorial</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>service-discovery-server</artifactId>
+----
++
+Note that _groupId_ and _version_ attributes of reviews-service can be removed since this project now inherits these attributes from the parent pom.
++
+Also remove the `<properties>..</properties>, <dependencyManagement>..</dependencyManagement>` and `<build>..</build>` completely.
+____
 
 Next edit the parent pom.xml so that it becomes aware of the child project:
 [quote]
@@ -199,12 +231,11 @@ spring:
       fail-fast: true
 ----
 ____
-
-Next up is to explicitly instruct Spring to enable the Eureka server.
+asdasda
 
 [quote]
 ____
-. Enable the server by adding the annotation `@EnableConfigServer` to `ConfigServerApplication` class in the `service-discovery-server` project.
+. Enable the server by adding the annotation `@EnableConfigServer` to `ConfigServerApplication` class in the `config-server` project.
 +
 .Example of enabled server
 [source,java]
@@ -241,13 +272,13 @@ java -jar service-discovery-server-1.0-SNAPSHOT.jar
 [WARNING]
 ====
 If the `service-discovery-server` does not start due to these errors:
-
-`Caused by: java.lang.IllegalStateException: StandardEngine[Tomcat].StandardHost[localhost].TomcatEmbeddedContext[] failed to start`
-
+----
+Caused by: java.lang.IllegalStateException: StandardEngine[Tomcat].StandardHost[localhost].TomcatEmbeddedContext[] failed to start
+----
 and higher up in the logs
-
-`Caused by: java.lang.ClassNotFoundException: javax.xml.bind.JAXBContext`
-
+----
+Caused by: java.lang.ClassNotFoundException: javax.xml.bind.JAXBContext
+----
 Then please check if you are running the application using Java 9 or above. From version 9 and onwards, the Java EE module is removed from the JDK. The classes not found here were in that module.
 
 How to fix (choose one of the two):
@@ -293,7 +324,7 @@ image::eureka-ui.png[]
 Please note _Instances currently registered with Eureka_, which tell us  that `service-discovery-server` has registered with itself.
 
 === Registering the other services with Service Discovery Server
-It is very easy to register `items-services` and `reviews-services` with `service-discovery-server`. All that is needed is to add the dependency to _spring-cloud-starter-netflix-eureka-client_ in each pom.xml, and the Spring Cloud automagic will do the trick.
+It is very easy to register `items-services` and `reviews-services` with `service-discovery-server`. All that is needed is to add a dependency to _spring-cloud-starter-netflix-eureka-client_, and the Spring Cloud automagic will do the trick.
 
 [quote]
 ____
@@ -309,10 +340,11 @@ ____
 ----
 +
 . Start the two services
-. Reload Eureka UI at http://localhost:8761/. Both services should be properly registered in `service-discovery-server`.
+. Reload Eureka UI at http://localhost:8761/, both services should now have been registered properly in `service-discovery-server`.
 ____
 
-The Service Discovery Service is now in place and are ready to register services in our domain. So far we have covered the registration part only. Now it is time to start using the discovery service for looking up other services, something that the _Gateway_ and _WebApi_ will need to do. Let us start with the WebApi.
+TODO: Add updated overview
+Talk about heartbeats
 
 <<microservices-5.adoc#,Nextup: WebApi>>
 
