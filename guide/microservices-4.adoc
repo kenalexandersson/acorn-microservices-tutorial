@@ -1,0 +1,73 @@
+= Spring Cloud
+:toc: left
+:imagesdir: images
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+== Take a step back and look at the picture
+Let's take some time and reflect upon things. We have an `items-service` and a `reviews-service` as core services in our application. They are built in Spring Boot, and both are utilizing Spring Cloud Config Server for getting configuration. The Config Server is in fact the only Spring Cloud tool used so far.
+
+[NOTE]
+Also worth noting is that the browser/client does call the services directly, which means that a client needs to be aware of where these are running and hence need to know the hostname and ports to use for accessing them.
+
+.Current progress so far
+image::overview-progress-after-it-re-conf.png[]
+
+If we revisit the schematic overview from the beginning of the tutorial, we see that there is some distance to cover before we have all the tools in place:
+
+.Schematic overview of the target result of the tutorial
+image::schematic-overview.png[]
+
+Here we see that we are still missing the Spring Cloud tools supporting the _Gateway_, _Service Discovery_ and _Client load balancing_ micro services patterns.
+
+We also need to implement the _WebApi_ component, which isn't a Spring Cloud tool but it will use Spring Cloud and act in that environment. So what is the WebApi and why do we use it?
+
+Well upon first look the _WebApi_ component is the entrance API for fetching information from the underlying _Items_ and _Reviews_ services. Any interested client will call the WebApi to, say, request item info and reviews for an item X. The client calls the WebApi only and hence does not need to know the addresses to the _items_/_reviews_ services (in fact we don't want an outside client to know about this).
+
+=== Backends For Frontends
+There is an architectural pattern known as Backends for Frontends (BFF) that our solution is influenced by. We will not deep dive in this pattern here, but the gist of it is as follows:
+
+Instead of providing a general purpose API that is used by several types of clients, like a _web application_ (written in React, Angular, Vue or whatever) or a _mobile client_ (iOS, Android), BFF is all about providing a tailored API for the web application, and another tailored API for the mobile client.
+
+image::bff.png[]
+
+This allows each BFF to aggregate and structure the response data to the particular needs of it's client. The BFF knows which services to call to do the job, effectively shielding clients from the inner complexity of the services setup.
+
+[TIP]
+====
+For more about BFF:
+https://philcalcado.com/2015/09/18/the_back_end_for_front_end_pattern_bff.html
+https://samnewman.io/patterns/architectural/bff/
+====
+
+=== The need for service discovery
+The _WebApi_ component is our BFF for an imagined web application (we do not bother fixing a sibling BFF targeting mobile apps in this tutorial). If the WebApi is our BFF, then we are about to start touching upon the problem _Service Discovery_ is here to solve:
+
+Problem:: The WebApi must be configured with the addresses and ports where it should find relevant services. But what if these services goes up and down, sometimes starting up again possibly on another location? Or if several instances of the same service are started dynamically, how could this be handled in a static configuration such application.yml (i.e. where hostnames and ports would be hardcoded)?
+
+The answer is: It can't be handled in that way (at least without a truckload of hassle).
+
+Solution:: The Service Discovery microservices pattern aims at solving the above problem. When clients make requests (in our case to WebApi), the WebApi queries a service registry, and forwards the requests to available service instances obtained from the registry.
++
+Each service will during startup automatically register to the Service registry. The registry will remove services when they shuts down (or if they time out).
+
+== Road map
+Given the above musings, it makes sense to continue our implementation race in this order.
+
+* Adding Service Discovery registry
+* Enable registering of existing services to registry (`items-service` and `reviews-service`)
+* Create the WebApi component `webapi`
+
+== Creating the Service Discovery
+
+== Creating the WebApi
+
+
+<<microservices-5.adoc#,Nextup: ??>>
+
