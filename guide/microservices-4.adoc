@@ -281,13 +281,13 @@ java -jar service-discovery-server-1.0-SNAPSHOT.jar
 [WARNING]
 ====
 If the `service-discovery-server` does not start due to these errors:
-----
-Caused by: java.lang.IllegalStateException: StandardEngine[Tomcat].StandardHost[localhost].TomcatEmbeddedContext[] failed to start
-----
+
+`Caused by: java.lang.IllegalStateException: StandardEngine[Tomcat].StandardHost[localhost].TomcatEmbeddedContext[] failed to start`
+
 and higher up in the logs
-----
-Caused by: java.lang.ClassNotFoundException: javax.xml.bind.JAXBContext
-----
+
+`Caused by: java.lang.ClassNotFoundException: javax.xml.bind.JAXBContext`
+
 Then please check if you are running the application using Java 9 or above. From version 9 and onwards, the Java EE module is removed from the JDK. The classes not found here were in that module.
 
 How to fix (choose one of the two):
