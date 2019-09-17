@@ -244,7 +244,7 @@ Next up is to explicitly instruct Spring to enable the Eureka server.
 
 [quote]
 ____
-. Enable the server by adding the annotation `@EnableConfigServer` to `ConfigServerApplication` class in the `config-server` project.
+. Enable the server by adding the annotation `@EnableConfigServer` to `ConfigServerApplication` class in the `service-discovery-server` project.
 +
 .Example of enabled server
 [source,java]
