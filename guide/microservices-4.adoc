@@ -10,7 +10,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-== Take a step back and look at the picture
+== Take a step back and look at the bigger picture
 Let's take some time and reflect upon things. We have an `items-service` and a `reviews-service` as core services in our application. They are built in Spring Boot, and both are utilizing Spring Cloud Config Server for getting configuration. The Config Server is in fact the only Spring Cloud tool used so far.
 
 [NOTE]
@@ -47,15 +47,15 @@ https://samnewman.io/patterns/architectural/bff/
 ====
 
 === The need for service discovery
-The _WebApi_ component is our BFF for an imagined web application (we do not bother fixing a sibling BFF targeting mobile apps in this tutorial). If the WebApi is our BFF, then we are about to start touching upon the problem _Service Discovery_ is here to solve:
+The _WebApi_ component is our BFF for an imagined web application (we do not bother fixing a sibling BFF targeting mobile apps in this tutorial). If the WebApi is our BFF, then we are about to touch upon the very problem _Service Discovery_ is here to solve:
 
-Problem:: The WebApi must be configured with the addresses and ports where it should find relevant services. But what if these services goes up and down, sometimes starting up again possibly on another location? Or if several instances of the same service are started dynamically, how could this be handled in a static configuration such application.yml (i.e. where hostnames and ports would be hardcoded)?
-
-The answer is: It can't be handled in that way (at least without a truckload of hassle).
+Problem:: The WebApi must be configured with the addresses and ports where it should find relevant services. But what if these services goes up and down, sometimes starting up again possibly on another location? Or if several instances of the same service are started dynamically, how does this align with the concept of static configuration such as application.yml (i.e. where hostnames and ports would be hardcoded)?
++
+The question is: How do clients determine the location (IP address and port) of services in an environment where addresses get assigned dynamically?
 
 Solution:: The Service Discovery microservices pattern aims at solving the above problem. When clients make requests (in our case to WebApi), the WebApi queries a service registry, and forwards the requests to available service instances obtained from the registry.
 +
-Each service will during startup automatically register to the Service Discovery server. The server will remove services when they shuts down (or if they time out).
+A prerequisite for this to work is that each service during startup must automatically register to the Service Discovery server. Each service must also notify the discovery service on shut down so they can be removed.
 
 === Road map
 Given the above musings, it makes sense to continue our implementation effort in this order.
@@ -65,7 +65,15 @@ Given the above musings, it makes sense to continue our implementation effort in
 * Create the WebApi component `webapi` which discovers the above services using the Service Discovery Server and then calls them
 
 == Service Discovery Server
-asdasd
+The idea behind a discovery server is to support a couple of central concepts.
+
+* Service Registration: The process of a service registering itself and it's location to the central registry. Usually it register it's host and port only, but can also provide arbitrary environment details if needed.
+
+* Service Discovery: The process of a client fetching information from the central registry to get knowledge about locations of services.
+
+Service instances are responsible for registering and deregistering themself with the service registry. Each service instance also sends heartbeat requests to prevent registration from expiring, which means that if heartbeats stops coming to the discovery server for a particular service, this service will eventually be removed.
+
+In this tutorial we are going use an implementation of Discovery Server named _Eureka_. Our next task is to create a project that uses it.
 
 === Creating the project
 
@@ -231,7 +239,8 @@ spring:
       fail-fast: true
 ----
 ____
-asdasda
+
+Next up is to explicitly instruct Spring to enable the Eureka server.
 
 [quote]
 ____
@@ -324,7 +333,7 @@ image::eureka-ui.png[]
 Please note _Instances currently registered with Eureka_, which tell us  that `service-discovery-server` has registered with itself.
 
 === Registering the other services with Service Discovery Server
-It is very easy to register `items-services` and `reviews-services` with `service-discovery-server`. All that is needed is to add a dependency to _spring-cloud-starter-netflix-eureka-client_, and the Spring Cloud automagic will do the trick.
+It is very easy to register `items-services` and `reviews-services` with `service-discovery-server`. All that is needed is to add the dependency to _spring-cloud-starter-netflix-eureka-client_ in each pom.xml, and the Spring Cloud automagic will do the trick.
 
 [quote]
 ____
@@ -340,10 +349,11 @@ ____
 ----
 +
 . Start the two services
-. Reload Eureka UI at http://localhost:8761/, both services should now have been registered properly in `service-discovery-server`.
+. Reload Eureka UI at http://localhost:8761/. Both services should be properly registered in `service-discovery-server`.
 ____
 
 TODO: Add updated overview
+
 Talk about heartbeats
 
 <<microservices-5.adoc#,Nextup: WebApi>>
