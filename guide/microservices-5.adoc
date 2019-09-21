@@ -11,9 +11,24 @@ ifdef::env-github[]
 endif::[]
 
 == WebApi
- `items-service` and `reviews-service`
+The webapi will be responsible for aggregating data and information from underlying services, and deliver it in a format suitable for the client.
+
+As you recall from the previous section, the webapi is influenced by the Backends for Frontends (BFF) pattern.
+
+.BFF pattern
+image::bff.png[]
+
+Translated to our schematic overview, _WebApi_ takes the same role as _Web BFF_ or _Mobile BFF_ do in figure 1 above.
 
 image::overview-5-webapi.png[]
+
+The `webapi` component will provide a set of REST resources for retrieving _items_ and _reviews_ from `items-service` and `reviews-service`. It will make use of the `service-discovery-client` to find where these services are located.
+
+[TIP]
+====
+What does a BFF typically do?
+Can handle api-keys and authentication if desired.
+====
 
 === Creating the project
 
@@ -22,11 +37,14 @@ ____
 . Go to https://start.spring.io/ (or use IntelliJ `New -> Module... -> Spring Initializr`)
 . Enter the following values in fields:
 .. `Group:` com.acorn.tutorial
-.. `Artifact:` service-discovery-server
+.. `Artifact:` webapi
 . Add dependencies (search for them and select):
-.. Eureka Server
 .. Spring Config Client
+.. Eureka Discovery Client
+.. Spring Web
+.. OpenFeign
 .. Spring Boot Actuator
+.. Lombok
 . Click `Generate the project`
 . If using https://start.spring.io: open the resulting zip and copy the items-service directory to the root of the project (acorn-microservices-tutorial)
 ____
@@ -59,7 +77,7 @@ Change
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.acorn.tutorial</groupId>
-    <artifactId>service-discovery-server</artifactId>
+    <artifactId>webapi</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
 ----
@@ -73,7 +91,7 @@ to
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>service-discovery-server</artifactId>
+    <artifactId>webapi</artifactId>
 ----
 +
 Note that _groupId_ and _version_ attributes of reviews-service can be removed since this project now inherits these attributes from the parent pom.
@@ -96,6 +114,7 @@ ____
         <module>service-discovery-server</module>
         <module>items-service</module>
         <module>reviews-service</module>
+        <module>webapi</module>
     </modules>
 
     ...
@@ -117,18 +136,19 @@ Expected outcome after running the command:
 ----
 [INFO] Reactor Summary:
 [INFO]
-[INFO] acorn-microservices-tutorial ....................... SUCCESS [  6.626 s]
-[INFO] config-server ...................................... SUCCESS [ 13.495 s]
-[INFO] service-discovery-server ........................... SUCCESS [  1.111 s]
-[INFO] items-service ...................................... SUCCESS [  4.785 s]
-[INFO] reviews-service .................................... SUCCESS [  1.945 s]
+[INFO] acorn-microservices-tutorial ....................... SUCCESS [  1.513 s]
+[INFO] config-server ...................................... SUCCESS [  3.292 s]
+[INFO] service-discovery-server ........................... SUCCESS [  2.063 s]
+[INFO] items-service ...................................... SUCCESS [  3.377 s]
+[INFO] reviews-service .................................... SUCCESS [  4.808 s]
+[INFO] webapi ............................................. SUCCESS [  3.980 s]
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
 ----
 
 === Configuring the WebApi
-The first thing to configure is to hook up the Service Discovery Server with the Config Server.
+The first thing to configure is to hook up the WebApi with the Config Server.
 
 * The application's general config should be defined in the central `config-server`
 * A `bootstrap.yml` file must be created, holding the config for binding to the `config-server`
@@ -140,7 +160,11 @@ ____
 +
 [source,yml]
 ----
-
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      default-zone: http://localhost:8761/eureka
 ----
 +
 . Rebuild the `config-server`
@@ -171,10 +195,125 @@ spring:
     config:
       uri: http://localhost:7777
       fail-fast: true
+
+feign:
+  hystrix:
+    enabled: false
+
+server:
+  port: 8100
 ----
 ____
 
 === Adding source code
+Let's add some initial code that defines the REST API in the form of a `@RestController`. The goal is to have this controller call `items-service` and `reviews-service` and aggregate the information into `ItemInfoDto`, which is sent back in responses.
+
+Start with adding the `ItemInfoDto` class. Noteworthy here is that this class represents an _Item_ with it's associated _Reviews_.
+
+[quote]
+____
+. Create a new package `webapi/src/main/java/com/acorn/tutorial/webapi/web`
+. Add a file named `ItemInfoDto.java` with the below content:
++
+[source,java]
+----
+@Data
+@ToString
+public class ItemInfoDto {
+
+    private Item item;
+    private List<Review> reviews;
+
+    public static ItemInfoDto of(Item item, List<Review> reviews) {
+        return new ItemInfoDto(item, reviews);
+    }
+
+    private ItemInfoDto(Item item, List<Review> reviews) {
+        this.item = item;
+        this.reviews = reviews;
+    }
+}
+----
++
+. Make it compile by adding `Item.java` and `Review.java` as well. These two classes will later be used for mapping responses from `items-service` and `reviews-service`
+.. `webapi/src/main/java/com/acorn/tutorial/webapi/web/Item.java`
++
+[source,java]
+----
+@Data
+@ToString
+@AllArgsConstructor
+public class Item {
+
+    private Long id;
+
+    private String name;
+
+    private int port;
+}
+----
+.. `webapi/src/main/java/com/acorn/tutorial/webapi/web/Review.java`
++
+[source,java]
+----
+@Data
+@AllArgsConstructor
+@ToString
+public class Review {
+
+    private Long id;
+
+    private String type;
+
+    private Long typeId;
+
+    private Integer rating;
+
+    private Integer ratingMin;
+
+    private Integer ratingMax;
+
+    private String comment;
+
+    private int port;
+}
+----
+____
+
+Now we can concentrate on the actual REST endpoints, by adding a class `WebApiController.java` annotated with `@RestController`.
+
+[quote]
+____
+. Add `webapi/src/main/java/com/acorn/tutorial/webapi/web/WebApiController.java`. In the beginning this will only contain skeleton code, just returning empty objects.
++
+[source,java]
+----
+@RestController
+public class WebApiController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebApiController.class);
+
+    @GetMapping(path = "/webapi/items")
+    public List<ItemInfoDto > getItems() {
+        return Collections.singletonList(ItemInfoDto.of(null, null));
+    }
+
+    @GetMapping(path = "/webapi/items/{id}")
+    public ItemInfoDto getItem(@PathVariable Long id) {
+
+        return ItemInfoDto.of(null, null);
+    }
+}
+----
+____
+
+So far we haven't encountered anything new here, we have added REST-controllers before in `items-service` and `reviews-service`. This is yet another REST-interface. But it is starting to get interesting now since a new question springs to mind:
+
+How do we call the underlying services in the most easiest way?
+
+
+
+==== OpenFeign
 
 === Running the application
 You should be able to start the server by using one of these two options.

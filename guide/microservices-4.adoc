@@ -351,9 +351,7 @@ ____
 . Reload Eureka UI at http://localhost:8761/. Both services should be properly registered in `service-discovery-server`.
 ____
 
-TODO: Add updated overview
-
-Talk about heartbeats
+The Service Discovery Service is now in place and are ready to register services in our domain. So far we have covered the registration part only. Now it is time to start using the discovery service for looking up other services, something that the _Gateway_ and _WebApi_ will need to do. Let us start with the WebApi.
 
 <<microservices-5.adoc#,Nextup: WebApi>>
 

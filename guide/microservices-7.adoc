@@ -16,5 +16,5 @@ endif::[]
 image::overview-7-gateway.png[]
 
 
-<<microservices-8.adoc#,Nextup: Wrapping up>>
+<<microservices-8.adoc#,Nextup: Distributed tracing>>
 
