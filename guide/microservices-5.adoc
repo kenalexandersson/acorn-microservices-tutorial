@@ -217,23 +217,17 @@ ____
 +
 [source,java]
 ----
-@Data
 @ToString
+@Value(staticConstructor = "of")
 public class ItemInfoDto {
 
     private Item item;
     private List<Review> reviews;
-
-    public static ItemInfoDto of(Item item, List<Review> reviews) {
-        return new ItemInfoDto(item, reviews);
-    }
-
-    private ItemInfoDto(Item item, List<Review> reviews) {
-        this.item = item;
-        this.reviews = reviews;
-    }
 }
 ----
++
+[NOTE]
+The lombok annotation `@Value(staticConstructor = "of")` will create a static factory method named _of_ that allows creation of objects by `ItemInfoDto.of(item, reviews)`
 +
 . Make it compile by adding `Item.java` and `Review.java` as well. These two classes will later be used for mapping responses from `items-service` and `reviews-service`
 .. `webapi/src/main/java/com/acorn/tutorial/webapi/web/Item.java`
