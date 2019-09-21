@@ -1,0 +1,20 @@
+= Spring Cloud
+:toc: left
+:imagesdir: images
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+== Client load balancer
+ `items-service` and `reviews-service`
+
+image::overview-6-client-loadbalancer.png[]
+
+
+<<microservices-7.adoc#,Nextup: Gateway>>
+

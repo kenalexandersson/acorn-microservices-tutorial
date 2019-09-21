@@ -13,9 +13,13 @@ endif::[]
 == Reviews Service
 People on the internet are keen on having opinions about everything and they love reviewing things. So as a companion to the `items-service`, there is a need for a `reviews-service` where people can rate items, and perhaps other stuff as well.
 
+.The reviews service
+image::overview-3-reviews-service.png[]
+
 The requirements list is kept small in this tutorial, we don't care about providing means for adding or updating reviews (via POST or PUT), the REST-API should only provide resources for getting reviews.
 
 The reviews should be stored in a H2 in-memory database.
+
 
 === Creating the project
 
