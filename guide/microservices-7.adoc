@@ -10,11 +10,11 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-== Client load balancer
+== Gateway
  `items-service` and `reviews-service`
 
-image::overview-6-client-loadbalancer.png[]
+image::overview-7-gateway.png[]
 
 
-<<microservices-7.adoc#,Nextup: Gateway>>
+<<microservices-8.adoc#,Nextup: Wrapping up>>
 
