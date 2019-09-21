@@ -25,6 +25,7 @@
         <module>service-discovery-server</module>
         <module>items-service</module>
         <module>reviews-service</module>
+        <module>webapi</module>
     </modules>
 
     <dependencyManagement>

@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: webapi
+  cloud:
+    config:
+      uri: http://localhost:7777
+      fail-fast: true
+
+feign:
+  hystrix:
+    enabled: false
+
+server:
+  port: 8100
