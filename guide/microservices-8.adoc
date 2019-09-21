@@ -10,11 +10,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-== Gateway
- `items-service` and `reviews-service`
+== Distributed tracing
 
-image::overview-7-gateway.png[]
-
-
-<<microservices-8.adoc#,Nextup: Distributed tracing>>
+<<microservices-8.adoc#,Nextup: Wrapping up>>
 

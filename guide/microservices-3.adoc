@@ -210,7 +210,7 @@ We should add the same type of classes here as well, namely:
 * A model class that will define how an Reviews object will look like. This will also take the role of an JPA-entity so it can be stored in database.
 * A Spring-JPA repository class that will handle the persistence of Reviews objects.
 * A Spring RestController class that will act as the REST-API to the outside, which will provide resources for retrieving _Reviews_ objects and present them on JSON-format
-* A DTO (data transfer object) that represents the JSON reponse
+* A DTO (data transfer object) that represents the JSON response
 
 ==== Model class
 [quote]
