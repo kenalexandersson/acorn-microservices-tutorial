@@ -381,7 +381,7 @@ public interface ReviewsClient {
 ----
 ____
 
-Notable here two things, namely
+Three things are notable here, namely
 
 * The `@FeignClient(name = "items-service")` and `@FeignClient(name = "reviews-service")` annotation values refer to the service name of each service, the one defined in `bootstrap.yml`, for example
 +
@@ -392,7 +392,7 @@ spring:
     name: items-service
 ----
 +
-This is important because these are the names the services are registered with in the discovery server. Make sure they match.
+This is important because these are the names the services are registered with in the discovery server. Make sure these names match properly.
 +
 * The interfaces declare methods for retrieving data from `items-service` and `reviews-service` respectively.
 * The previously created classes `Item` and `Review` acts as model objects into which responses from services will get mapped.
