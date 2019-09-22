@@ -383,7 +383,7 @@ ____
 
 Notable here two things, namely
 
-* The `@FeignClient(name = "items-service")` and `@FeignClient(name = "reviews-service")` annotation values refers to the service name of each service, the one defined in the services' bootstrap.yml, for example
+* The `@FeignClient(name = "items-service")` and `@FeignClient(name = "reviews-service")` annotation values refer to the service name of each service, the one defined in `bootstrap.yml`, for example
 +
 [source,yml]
 ----
@@ -391,6 +391,8 @@ spring:
   application:
     name: items-service
 ----
++
+This is important because these are the names the services are registered with in the discovery server. Make sure they match.
 +
 * The interfaces declare methods for retrieving data from `items-service` and `reviews-service` respectively.
 * The previously created classes `Item` and `Review` acts as model objects into which responses from services will get mapped.
@@ -429,7 +431,7 @@ public class WebapiApplication {
 ____
 
 ==== Using the OpenFeign client
-Let's add the code to `WebApiController` that makes use of the OpenFeign client.
+Let's add code to `WebApiController` that makes use of the OpenFeign client.
 
 [quote]
 ____
@@ -453,7 +455,7 @@ public class WebApiController {
 }
 ----
 +
-. The `List<ItemInfoDto> getItems()` does right now return a list containing an empty `ItemInfoDto`. Change this so that underlying services are called via the clients, and then aggregate their responses into the `ItemInfoDto`.
+. The `List<ItemInfoDto> getItems()` does right now return a list containing an empty `ItemInfoDto`. Change this so that underlying services are called via the clients, and then aggregate their responses into the `ItemInfoDto` list.
 +
 [source,java]
 ----
@@ -486,7 +488,7 @@ public class WebApiController {
 }
 ----
 +
-. asd
+. Method `ItemInfoDto getItem(@PathVariable Long id)` should fetch data for a specific item, please make it so by using this code.
 +
 [source,java]
 ----
@@ -558,9 +560,6 @@ public class WebApiController {
 
 We are finally there. Try the application out.
 
-[IMPORTANT]
-Make sure that the all the other applications are up and running before trying the `webapi`.
-
 === Running the application
 You should be able to start the server by using one of these two options.
 
@@ -577,6 +576,9 @@ cd acorn-microservices-tutorial/webapi/target
 
 java -jar webapi-1.0-SNAPSHOT.jar
 ----
+
+[IMPORTANT]
+Make sure that the all the other applications are up and running before trying the `webapi`.
 
 Take a look at the logs, the application should start fine.
 
