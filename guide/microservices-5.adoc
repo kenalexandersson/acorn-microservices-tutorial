@@ -40,9 +40,7 @@ ____
 .. `Artifact:` webapi
 . Add dependencies (search for them and select):
 .. Spring Config Client
-.. Eureka Discovery Client
 .. Spring Web
-.. OpenFeign
 .. Spring Boot Actuator
 .. Lombok
 . Click `Generate the project`
@@ -227,7 +225,7 @@ public class ItemInfoDto {
 ----
 +
 [NOTE]
-The lombok annotation `@Value(staticConstructor = "of")` will create a static factory method named _of_ that allows creation of objects by `ItemInfoDto.of(item, reviews)`
+The lombok annotation `@Value(staticConstructor = "of")` will create a private constructor and a static factory method named _of_ that allows creation of objects by using `ItemInfoDto.of(item, reviews)`.
 +
 . Make it compile by adding `Item.java` and `Review.java` as well. These two classes will later be used for mapping responses from `items-service` and `reviews-service`
 .. `webapi/src/main/java/com/acorn/tutorial/webapi/web/Item.java`
@@ -274,7 +272,7 @@ public class Review {
 ----
 ____
 
-Now we can concentrate on the actual REST endpoints, by adding a class `WebApiController.java` annotated with `@RestController`.
+Now we can concentrate on the actual REST endpoints, by adding a class `WebApiController.java` that uses the annotation `@RestController`.
 
 [quote]
 ____
@@ -284,8 +282,6 @@ ____
 ----
 @RestController
 public class WebApiController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebApiController.class);
 
     @GetMapping(path = "/webapi/items")
     public List<ItemInfoDto > getItems() {
@@ -301,13 +297,269 @@ public class WebApiController {
 ----
 ____
 
-So far we haven't encountered anything new here, we have added REST-controllers before in `items-service` and `reviews-service`. This is yet another REST-interface. But it is starting to get interesting now since a new question springs to mind:
+So far we haven't encountered anything new here, we have used REST-controllers before in `items-service` and `reviews-service`. This is yet another REST-interface, but it is starting to get interesting now since a new question springs to mind:
 
 How do we call the underlying services in the most easiest way?
 
+What we want the `webapi` to do is this:
 
+* Have a convenient way of calling the underlying services' REST-API. For this we will introduce a new Spring Cloud tool called _OpenFeign_.
+* Look up where to find the underlying services via the `service-discovery-service`. For this to work we need to make `webapi` into a discovery  service client.
 
-==== OpenFeign
+==== Spring Cloud OpenFeign
+
+Spring Cloud OpenFeign is a declarative REST client for Spring Boot applications. Feign makes writing web service clients easier with pluggable annotation support, which includes Feign annotations and JAX-RS annotations.
+
+Also, Spring Cloud adds support for Spring MVC annotations and for using the same HttpMessageConverters as used in Spring Web.
+
+A major benefit with using Feign is that we don't have to write any code for calling the service, other than an interface definition.
+
+https://cloud.spring.io/spring-cloud-openfeign/reference/html/
+
+To start using OpenFeign, we must first add a dependency into the pom.xml file, and also enable it in the application.
+
+[quote]
+____
+. Open `webapi/pom.xml` and add the below dependency
++
+[source,xml]
+----
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+----
++
+. Enable OpenFeign by opening `webapi/src/main/java/com/acorn/tutorial/webapi/WebapiApplication.java` and adding `@EnableFeignClients`. Note that the base package `com.acorn.tutorial.webapi` is specified as well, meaning that classes under this package can be feign clients.
++
+[source,java]
+----
+@EnableFeignClients("com.acorn.tutorial.webapi")
+@SpringBootApplication
+public class WebapiApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(WebapiApplication.class, args);
+    }
+
+}
+----
+____
+
+The next logical step would be to create the actual clients for `items-service` and `reviews-service`. First in their rawest form, and later a bit more elaborated. Let us start with the _Items client_.
+
+[quote]
+____
+. Create the file `webapi/src/main/java/com/acorn/tutorial/webapi/ItemsClient.java`
++
+[source,java]
+----
+@FeignClient(name = "items-service")
+public interface ItemsClient {
+
+    @GetMapping("/items")
+    List<Item> getItems();
+
+    @GetMapping("/items/{id}")
+    Item getItem(@PathVariable Long id);
+}
+----
++
+. Create the file `webapi/src/main/java/com/acorn/tutorial/webapi/ReviewsClient.java`
++
+[source,java]
+----
+@FeignClient(name = "reviews-service")
+public interface ReviewsClient {
+
+    @GetMapping("/reviews/{type}")
+    List<Review> getReviews(@PathVariable String type);
+
+    @GetMapping("/reviews/{type}/{typeid}")
+    List<Review> getReviews(@PathVariable String type, @PathVariable Long typeid);
+}
+----
+____
+
+Notable here two things, namely
+
+* The `@FeignClient(name = "items-service")` and `@FeignClient(name = "reviews-service")` annotation values refers to the service name of each service, the one defined in the services' bootstrap.yml, for example
++
+[source,yml]
+----
+spring:
+  application:
+    name: items-service
+----
++
+* The interfaces declare methods for retrieving data from `items-service` and `reviews-service` respectively.
+* The previously created classes `Item` and `Review` acts as model objects into which responses from services will get mapped.
+
+And yes, that is pretty much what's needed for start calling the underlying services. Unless a couple of things. First, the `webapi` must become a client to the discovery server so the Feign clients can query where to send their REST-calls. After that we should add code that uses the `ItemsClient` and `ReviewsClient` interfaces.
+
+==== Making webapi into a discovery server client
+This is very easy. In true Spring Cloud fashion, it is enough to just add the right dependency and put the correct annotation into the application class:
+[quote]
+____
+. Open `webapi/pom.xml` and add the below dependency
++
+[source,xml]
+----
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    </dependency>
+----
++
+. Enable Eureka by opening `webapi/src/main/java/com/acorn/tutorial/webapi/WebapiApplication.java` and adding @EnableDiscoveryClient`.
++
+[source,java]
+----
+@EnableDiscoveryClient
+@EnableFeignClients("com.acorn.tutorial.webapi")
+@SpringBootApplication
+public class WebapiApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(WebapiApplication.class, args);
+    }
+
+}
+----
+____
+
+==== Using the OpenFeign client
+Let's add the code to `WebApiController` that makes use of the OpenFeign client.
+
+[quote]
+____
+. Open `web/WebApiController.java` and inject the client interfaces
++
+[source,java]
+----
+@RestController
+public class WebApiController {
+
+    private final ItemsClient itemsClient;
+    private final ReviewsClient reviewsClient;
+
+    @Autowired
+    public WebApiController(ItemsClient itemsClient, ReviewsClient reviewsClient) {
+        this.itemsClient = itemsClient;
+        this.reviewsClient = reviewsClient;
+    }
+
+    ...
+}
+----
++
+. The `List<ItemInfoDto> getItems()` does right now return a list containing an empty `ItemInfoDto`. Change this so that underlying services are called via the clients, and then aggregate their responses into the `ItemInfoDto`.
++
+[source,java]
+----
+@RestController
+public class WebApiController {
+
+    ...
+
+    @GetMapping(path = "/webapi/items")
+    public List<ItemInfoDto> getItems() {
+
+        List<Item> items = itemsClient.getItems();
+        List<Review> reviews = reviewsClient.getReviews("item");
+
+        return items.stream()
+                .map(item -> createItemInfoDto(item, reviews))
+                .collect(Collectors.toList());
+    }
+
+    private ItemInfoDto createItemInfoDto(Item item, List<Review> reviews) {
+
+        List<Review> itemReviews = reviews.stream()
+                .filter(review -> item.getId().equals(review.getTypeId()))
+                .collect(Collectors.toList());
+
+        return ItemInfoDto.of(item, itemReviews);
+    }
+
+    ...
+}
+----
++
+. asd
++
+[source,java]
+----
+@RestController
+public class WebApiController {
+
+    ...
+
+    @GetMapping(path = "/webapi/items/{id}")
+    public ItemInfoDto getItem(@PathVariable Long id) {
+
+        Item item = itemsClient.getItem(id);
+        List<Review> reviews = reviewsClient.getReviews("item", id);
+
+        return ItemInfoDto.of(item, reviews);
+    }
+
+    ...
+}
+----
+____
+
+The complete `WebApiController` class should now look like this.
+
+[source,java]
+----
+@RestController
+public class WebApiController {
+
+    private final ItemsClient itemsClient;
+    private final ReviewsClient reviewsClient;
+
+    @Autowired
+    public WebApiController(ItemsClient itemsClient, ReviewsClient reviewsClient) {
+        this.itemsClient = itemsClient;
+        this.reviewsClient = reviewsClient;
+    }
+
+    @GetMapping(path = "/webapi/items")
+    public List<ItemInfoDto> getItems() {
+
+        List<Item> items = itemsClient.getItems();
+        List<Review> reviews = reviewsClient.getReviews("item");
+
+        return items.stream()
+                .map(item -> createItemInfoDto(item, reviews))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping(path = "/webapi/items/{id}")
+    public ItemInfoDto getItem(@PathVariable Long id) {
+
+        Item item = itemsClient.getItem(id);
+        List<Review> reviews = reviewsClient.getReviews("item", id);
+
+        return ItemInfoDto.of(item, reviews);
+    }
+
+    private ItemInfoDto createItemInfoDto(Item item, List<Review> reviews) {
+
+        List<Review> itemReviews = reviews.stream()
+                .filter(review -> item.getId().equals(review.getTypeId()))
+                .collect(Collectors.toList());
+
+        return ItemInfoDto.of(item, itemReviews);
+    }
+}
+----
+
+We are finally there. Try the application out.
+
+[IMPORTANT]
+Make sure that the all the other applications are up and running before trying the `webapi`.
 
 === Running the application
 You should be able to start the server by using one of these two options.
@@ -326,6 +578,14 @@ cd acorn-microservices-tutorial/webapi/target
 java -jar webapi-1.0-SNAPSHOT.jar
 ----
 
+Take a look at the logs, the application should start fine.
+
+* Check the health status: http://localhost:9090/webapi/health
+* Check Eureka, all relevant apps should be registered: http://localhost:8761
+* Fetch all items with corresponding reviews: http://localhost:8100/webapi/items
+* Fetch a specific item with corresponding reviews: http://localhost:8100/webapi/items/1
+
+TODO: Round up and point to extra material about error handling and resilience.
 
 <<microservices-6.adoc#,Nextup: Client load balancer>>
 
