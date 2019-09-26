@@ -11,10 +11,59 @@ ifdef::env-github[]
 endif::[]
 
 == Client load balancer
- `items-service` and `reviews-service`
+
+Netflix Ribbon is a cloud library that primarily provides client-side load balancing algorithms. This comes in handy when we start to run multiple instances of `items-service` and `reviews-service`, which we will do shortly.
 
 image::overview-6-client-loadbalancer.png[]
 
+The obvious benefit of running several instances of the same service, is to increase the capacity to be able to handle higher load. Ribbon helps in distributing calls to the service instances evenly.
+
+Apart from the client-side load balancing algorithms, Ribbon also provides these features:
+
+* _Service Discovery Integration_ – Ribbon load balancer provide service discovery in dynamic environments like a cloud. Integration with Eureka and Netflix service discovery component is included in the ribbon library
+
+* _Fault Tolerance_ – the Ribbon API can dynamically determine whether the servers are up and running in a live environment and can detect those servers that are down
+
+Add
+[source,xml]
+----
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+    </dependency>
+----
+
+set `@RibbonClient(name = "items-service")`
+
+[source,java]
+----
+@FeignClient(name = "items-service")
+@RibbonClient(name = "items-service")
+public interface ItemsClient {
+
+    @GetMapping("/items")
+    List<Item> getItems();
+
+    @GetMapping("/items/{id}")
+    Item getItem(@PathVariable Long id);
+}
+----
+
+access http://localhost:8100/webapi/items
+
+check port
+
+access again (reload)
+
+check port
+
+shutdown one instance
+
+access again
+
+check port
+
+=== Failure Resiliency
 
 <<microservices-7.adoc#,Nextup: Gateway>>
 
