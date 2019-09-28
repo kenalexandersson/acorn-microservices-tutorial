@@ -65,9 +65,21 @@ check port
 
 === Failure Resiliency
 
-Turning off all instances
+Turning off all instances of items service
 
 Initially java.net.ConnectException, after timeout com.netflix.client.ClientException: Load balancer does not have available server for client: items-service
+
+. enabling hystrix -> There was an unexpected error (type=Internal Server Error, status=500).
+ItemsClient#getItem(Long) failed and no fallback available.
++
+[source,yml]
+----
+feign:
+  hystrix:
+    enabled: true
+----
+
+. adding fallback code
 
 Handle it more graceful by using feign fallback
 
@@ -91,12 +103,12 @@ public interface ItemsClient {
             return new ItemsClient() {
                 @Override
                 public List<Item> getItems() {
-                    return Collections.singletonList(new Item(0L, "ken", 0));
+                    return Collections.emptyList();
                 }
 
                 @Override
                 public Item getItem(Long id) {
-                    return new Item(0L, "ken", 0);
+                    return null;
                 }
             };
         }
@@ -104,12 +116,43 @@ public interface ItemsClient {
 }
 ----
 
-[source,yml]
+[source,java]
 ----
-feign:
-  hystrix:
-    enabled: true
+@FeignClient(name = "reviews-service", fallbackFactory = ReviewsClient.ReviewsServiceFallbackFactory.class)
+public interface ReviewsClient {
+
+    @GetMapping("/reviews/{type}")
+    List<Review> getReviews(@PathVariable String type);
+
+    @GetMapping("/reviews/{type}/{typeid}")
+    List<Review> getReviews(@PathVariable String type, @PathVariable Long typeid);
+
+    class ReviewsServiceFallbackFactory implements FallbackFactory<ReviewsClient> {
+
+        @Override
+        public ReviewsClient create(Throwable throwable) {
+            return new ReviewsClient() {
+                @Override
+                public List<Review> getReviews(String type) {
+                    return Collections.emptyList();
+                }
+
+                @Override
+                public List<Review> getReviews(String type, Long typeid) {
+                    return null;
+                }
+            };
+        }
+    }
+}
 ----
+
+return 200 and empty values
+
+Turn on services again - will eventually show up again
+
+Hystrix?
+
 
 <<microservices-7.adoc#,Nextup: Gateway>>
 
