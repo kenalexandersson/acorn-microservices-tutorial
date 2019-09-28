@@ -326,7 +326,7 @@ public class ReviewsServiceController {
     @GetMapping(path = "/reviews/{type}", produces = "application/json")
     public List<ReviewDto> getReviews(@PathVariable String type) {
         List<Review> reviews = reviewRepository.findByType(type)
-                .orElseThrow(() -> new ReviewNotFoundException(type, null));
+                .orElseGet(Collections::emptyList);
 
         return reviews.stream()
                 .map(this::toReviewDto)
@@ -336,7 +336,7 @@ public class ReviewsServiceController {
     @GetMapping(path = "/reviews/{type}/{typeId}", produces = "application/json")
     public List<ReviewDto> getReviewsForIndividual(@PathVariable String type, @PathVariable Long typeId) {
         List<Review> reviews = reviewRepository.findByTypeAndTypeId(type, typeId)
-                .orElseThrow(() -> new ReviewNotFoundException(type, typeId));
+                .orElseGet(Collections::emptyList);
 
         return reviews.stream()
                 .map(this::toReviewDto)
@@ -406,42 +406,6 @@ public class ReviewDto {
         this.ratingMax = review.getRatingMax();
         this.comment = review.getComment();
         this.port = port;
-    }
-}
-----
-____
-
-==== ReviewNotFoundException and ReviewNotFoundAdvice
-The final classes to add in order to get everything under control are the `ReviewNotFoundException` class that is thrown when an `Review` cannot be found, and the `ReviewNotFoundAdvice` class that will handle the exception and produce the appropriate response status code to send back to client.
-
-[quote]
-____
-. Create new file `reviews-service/src/main/java/com/acorn/tutorial/reviewsservice/web/ReviewNotFoundException.java`
-+
-[source,java]
-----
-public class ReviewNotFoundException extends RuntimeException {
-    public ReviewNotFoundException(String type, Long typeId) {
-        super(String.format("Failed to find review of type %s with typeId: %d", type, typeId));
-    }
-}
-----
-____
-
-[quote]
-____
-. Create new file `reviews-service/src/main/java/com/acorn/tutorial/reviewsservice/web/ReviewNotFoundAdvice .java`
-+
-[source,java]
-----
-@ControllerAdvice
-public class ReviewNotFoundAdvice {
-
-    @ResponseBody
-    @ExceptionHandler(ReviewNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String itemNotFoundHandler(ReviewNotFoundException ex) {
-        return ex.getMessage();
     }
 }
 ----
