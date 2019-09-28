@@ -1,6 +1,5 @@
 package com.acorn.tutorial.reviewsservice.web;
 
-import com.acorn.tutorial.reviewsservice.exception.ReviewNotFoundException;
 import com.acorn.tutorial.reviewsservice.model.Review;
 import com.acorn.tutorial.reviewsservice.repository.ReviewRepository;
 import org.slf4j.Logger;
@@ -9,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,11 +17,15 @@ public class ReviewsServiceController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReviewsServiceController.class);
 
-    @Autowired
-    private ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
+
+    private final Environment environment;
 
     @Autowired
-    private Environment environment;
+    public ReviewsServiceController(ReviewRepository reviewRepository, Environment environment) {
+        this.reviewRepository = reviewRepository;
+        this.environment = environment;
+    }
 
     @GetMapping(path = "/reviews", produces = "application/json")
     public List<ReviewDto> getAllReviews() {
@@ -38,7 +42,7 @@ public class ReviewsServiceController {
     @GetMapping(path = "/reviews/{type}", produces = "application/json")
     public List<ReviewDto> getReviews(@PathVariable String type) {
         List<Review> reviews = reviewRepository.findByType(type)
-                .orElseThrow(() -> new ReviewNotFoundException(type, null));
+                .orElseGet(Collections::emptyList);
 
         return reviews.stream()
                 .map(this::toReviewDto)
@@ -48,7 +52,7 @@ public class ReviewsServiceController {
     @GetMapping(path = "/reviews/{type}/{typeId}", produces = "application/json")
     public List<ReviewDto> getReviewsForIndividual(@PathVariable String type, @PathVariable Long typeId) {
         List<Review> reviews = reviewRepository.findByTypeAndTypeId(type, typeId)
-                .orElseThrow(() -> new ReviewNotFoundException(type, typeId));
+                .orElseGet(Collections::emptyList);
 
         return reviews.stream()
                 .map(this::toReviewDto)

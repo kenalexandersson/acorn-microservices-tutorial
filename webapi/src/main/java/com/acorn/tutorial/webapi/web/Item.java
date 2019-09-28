@@ -13,5 +13,5 @@ public class Item {
 
     private String name;
 
-    private int port;
+    private Integer port;
 }

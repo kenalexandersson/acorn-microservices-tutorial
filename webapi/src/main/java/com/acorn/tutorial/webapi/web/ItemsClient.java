@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.Collections;
 import java.util.List;
 
-@FeignClient(name = "items-service", fallbackFactory = ItemsClient.ItemsServiceFeignClientFallbackFactory.class)
+@FeignClient(name = "items-service", fallbackFactory = ItemsClient.ItemsServiceFallbackFactory.class)
 @RibbonClient(name = "items-service")
 public interface ItemsClient {
 
@@ -21,19 +21,19 @@ public interface ItemsClient {
     Item getItem(@PathVariable Long id);
 
     @Component
-    class ItemsServiceFeignClientFallbackFactory implements FallbackFactory<ItemsClient> {
+    class ItemsServiceFallbackFactory implements FallbackFactory<ItemsClient> {
 
         @Override
         public ItemsClient create(Throwable throwable) {
             return new ItemsClient() {
                 @Override
                 public List<Item> getItems() {
-                    return Collections.singletonList(new Item(0L, "ken", 0));
+                    return Collections.emptyList();
                 }
 
                 @Override
                 public Item getItem(Long id) {
-                    return new Item(0L, "ken", 0);
+                    return null;
                 }
             };
         }
