@@ -54,7 +54,7 @@ public interface ItemsClient {
 }
 ----
 +
-This is all it takes to make Ribbon cooperate with Eureka. If we start another instance of `items-service`, we should be able to the load balancing in action.
+This is all it takes to make Ribbon cooperate with Eureka. If we start another instance of `items-service`, we should be able to see the load balancing in action.
 +
 . Start another `items-service` instance using one of these two approaches:
 .. If you are using IntelliJ, duplicate the _ItemsServiceApplication_ run configuration. Override parameter _server.port_, set it to 8085
@@ -99,7 +99,7 @@ If you are interested in knowing more, a quick introduction is available at http
 It is however not necessary to read this in order to continue the tutorial, save it to a rainy day or when you have trouble sleeping.
 ====
 
-We will utilize the Circuit breaker pattern for achieving. Feign uses _Hystrix_ (even though it is disabled by default), which is a Netflix OSS library that implements the circuit breaker pattern. The circuit breaker pattern allows you to build a fault tolerant and resilient system that can survive gracefully when key services are either unavailable or have high latency.
+We will utilize the Circuit breaker pattern for achieving fault tolerance. Feign uses _Hystrix_ (even though it is disabled by default), which is a Netflix OSS library that implements the circuit breaker pattern. The circuit breaker pattern allows you to build a fault tolerant and resilient system that can survive gracefully when key services are either unavailable or have high latency.
 
 Let's try Hystrix out.
 
