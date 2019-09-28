@@ -65,5 +65,51 @@ check port
 
 === Failure Resiliency
 
+Turning off all instances
+
+Initially java.net.ConnectException, after timeout com.netflix.client.ClientException: Load balancer does not have available server for client: items-service
+
+Handle it more graceful by using feign fallback
+
+[source,java]
+----
+@FeignClient(name = "items-service", fallbackFactory = ItemsClient.ItemsServiceFeignClientFallbackFactory.class)
+@RibbonClient(name = "items-service")
+public interface ItemsClient {
+
+    @GetMapping("/items")
+    List<Item> getItems();
+
+    @GetMapping("/items/{id}")
+    Item getItem(@PathVariable Long id);
+
+    @Component
+    class ItemsServiceFeignClientFallbackFactory implements FallbackFactory<ItemsClient> {
+
+        @Override
+        public ItemsClient create(Throwable throwable) {
+            return new ItemsClient() {
+                @Override
+                public List<Item> getItems() {
+                    return Collections.singletonList(new Item(0L, "ken", 0));
+                }
+
+                @Override
+                public Item getItem(Long id) {
+                    return new Item(0L, "ken", 0);
+                }
+            };
+        }
+    }
+}
+----
+
+[source,yml]
+----
+feign:
+  hystrix:
+    enabled: true
+----
+
 <<microservices-7.adoc#,Nextup: Gateway>>
 
