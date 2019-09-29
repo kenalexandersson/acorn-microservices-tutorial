@@ -12,11 +12,11 @@ endif::[]
 
 == Client load balancer
 
-Netflix Ribbon is a cloud library that primarily provides client-side load balancing algorithms. This comes in handy when we start to run multiple instances of `items-service` and `reviews-service`, which we will do shortly.
+Netflix Ribbon is a cloud library that primarily provides client-side load balancing algorithms. This comes in handy when we start to run multiple instances of `items-service` and `reviews-service`. We will do this soon when we start two instances of `items-service` on ports 8080 and 8085, and two instances of `reviews-service` on ports 9090 and 9095.
 
 image::overview-6-client-loadbalancer.png[]
 
-The obvious benefit of running several instances of the same service, is to increase the capacity to be able to handle higher load. Ribbon helps in distributing calls to the service instances evenly.
+The obvious benefit of running several instances of the same service, is to increase the capacity to be able to handle higher load. Other use cases could include https://dev.to/mostlyjason/intro-to-deployment-strategies-blue-green-canary-and-more-3a3[Blue/Green deployment]. Ribbon helps in distributing calls to the service instances evenly.
 
 Apart from the client-side load balancing algorithms, Ribbon also provides these features:
 
@@ -24,7 +24,7 @@ Apart from the client-side load balancing algorithms, Ribbon also provides these
 
 * _Fault Tolerance_ – the Ribbon API can dynamically determine whether the servers are up and running in a live environment and can detect those servers that are down
 
-Ribbon is enabled in the same familiar way we have grown used to, by adding a maven dependency.
+Ribbon is enabled in the same familiar way we have grown used to and love, by adding a maven dependency.
 
 [quote]
 ____
@@ -86,20 +86,23 @@ Check the value of _item.port_ in JSON output
 Refresh http://localhost:8100/webapi/items again. You should immediately see that the loadbalancer falls back to using one port only.
 ____
 
+Repeat the process for `reviews-service`, if you are in the mood for it. It is always fun to see the ports in the JSON-output flutter around.
 
-=== Fault tolerance and Resiliency
-Since the `webapi` calls `items-service` and `reviews-service`, it is of course dependent upon these services being up and running. But what happens when one or both of the services goes down, how should the `webapi` behave in such situation?
+== Fault tolerance and Resiliency
+Since the `webapi` calls `items-service` and `reviews-service`, it is of course dependent upon these services being up and running. But what happens when one or both of the services goes down, or their response time slows down, how should the `webapi` behave in such situation?
 
-This is the topic of fault tolerance and resilient systems. The ambition in this tutorial is not to dig in to this area overly much, but let us look at some quick ways to add fault tolerance into the Feign clients we have created.
+This is the topic of fault tolerance and resilient systems. The main idea is to stop cascading failures between services by failing fast and recover as soon as possible. A problem with distributed applications is that they communicate over network – which is unreliable. Hence you need to design your microservices in such a way that they are _fault tolerant_ and handle failures gracefully. In your microservice architecture, there might be several services talking with each other. You need to ensure that one failed service does not bring down the entire architecture.
+
+The ambition in this tutorial is not to drill down into this area overly much, but let us look at some quick ways to add fault tolerance into the Feign clients we have created.
 
 [TIP]
 ====
 If you are interested in knowing more, a quick introduction is available at https://techblog.constantcontact.com/software-development/circuit-breakers-and-microservices/.
 
-It is however not necessary to read this in order to continue the tutorial, save it to a rainy day or when you have trouble sleeping.
+It is however not necessary to read this in order to continue the tutorial, save it for a rainy day or when you have trouble sleeping.
 ====
 
-We will utilize the Circuit breaker pattern for achieving fault tolerance. Feign uses _Hystrix_ (even though it is disabled by default), which is a Netflix OSS library that implements the circuit breaker pattern. The circuit breaker pattern allows you to build a fault tolerant and resilient system that can survive gracefully when key services are either unavailable or have high latency.
+We will utilize the Circuit breaker pattern for achieving fault tolerance. Feign uses _Hystrix_ (even though it is disabled by default), which is a Netflix OSS library that implements the circuit breaker pattern. The circuit breaker pattern allows you to build a fault tolerant system that can survive gracefully when key services are either unavailable or have high latency.
 
 Let's try Hystrix out.
 
@@ -109,8 +112,18 @@ ____
 . Make sure all other services are running
 . Access http://localhost:8100/webapi/items/1
 +
-Initially you should see an error saying _There was an unexpected error (type=Internal Server Error, status=500).
-Connection refused (Connection refused) executing GET http://items-service/items/1_, and if you retry again after roughly 30 seconds a new message saying _com.netflix.client.ClientException: Load balancer does not have available server for client: items-service_ should be seen.
+Initially you should see an error saying
++
+----
+There was an unexpected error (type=Internal Server Error, status=500).
+Connection refused (Connection refused) executing GET http://items-service/items/1
+----
++
+If you retry again after roughly 30 seconds a new message should be seen
++
+----
+com.netflix.client.ClientException: Load balancer does not have available server for client: items-service should be seen.
+----
 +
 The reason for the different messages is because initially the feign client fails to connect, which gives _Connection refused_. After 30 seconds or so, the service discovery server detects that `items-service` has not sent any heartbeats and removes it from the list of known services. When we access the resource again, we get _Load balancer does not have available server for client: items-service_.
 
@@ -125,8 +138,12 @@ feign:
 +
 . Restart `webapi` and access http://localhost:8100/webapi/items/1
 +
-The logs shows that we still get the same ClientException, but the response body now says _there was an unexpected error (type=Internal Server Error, status=500).
-ItemsClient#getItem(Long) failed and no fallback available._
+The logs shows that we still get the same ClientException, but the response body now says
++
+----
+There was an unexpected error (type=Internal Server Error, status=500).
+ItemsClient#getItem(Long) failed and no fallback available.
+----
 +
 The last part about _no fallback available_ is interesting. A Feign client can use a fallback class that is triggered every time there is a failure.
 
@@ -208,9 +225,11 @@ The resource should now return 200 OK again and a JSON response. Note the empty 
 +
 . Turn on one `items-service` instance again
 . Refresh http://localhost:8100/webapi/items/1 repeatedly, after approximately 30 seconds the instance will be detected again and the items part will be back to normal.
-
 ____
 
+This was of a quick and a bit simplified example of how to use Hystrix. There is a lot more configuration available to steer the behaviour and policies of Hystrix, like how to set things up for retrying failed requests and then backoff if it still does not work, or for introducing fallbacks to cached data if the database response latency goes bad.
+
+But we are done with it for the moment. Take a quick nap and then come back for the _Gateway_, our single point of entry for outside clients.
 
 <<microservices-7.adoc#,Nextup: Gateway>>
 
