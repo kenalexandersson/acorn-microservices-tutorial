@@ -111,83 +111,39 @@ ____
 . Click `Finish`
 ____
 
-Now we need to make the copied project into a child-project of the intitial maven project. This means that it is time for edit a couple of pom.xml files.
+Now we need to make the copied project into a child-project of the initial maven project. This means that it is time for edit the parent pom.xml file.
 
-First of all, edit the newly created child pom.xml to point to the parent pom file:
-[quote]
-____
-. Open `acorn-microservices-tutorial/items-service/pom.xml`
-. Change the reference to parent pom as follows:
-+
-Change
-+
-[source,xml]
-----
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.8.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
-    <groupId>com.acorn.tutorial</groupId>
-    <artifactId>items-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-
-----
-to
-+
-[source,xml]
-----
-    <parent>
-        <groupId>com.acorn.tutorial</groupId>
-        <artifactId>acorn-microservices-tutorial</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>items-service</artifactId>
-
-----
-+
-Note that _groupId_ and _version_ attributes of items-service can be removed since this project now inherits these attributes from the parent pom.
-+
-Also remove the `<properties>..</properties>, <dependencyManagement>..</dependencyManagement>` and `<build>..</build>` completely.
-____
-
-
-Next edit the parent pom.xml so that it becomes aware of the child project:
 [quote]
 ____
 . Open `acorn-microservices-tutorial/pom.xml`
 . Add `items-service` as module in the parent pom:
 +
-Change
+Before
 +
 [source,xml]
 ----
-    <properties>
-        <java.version>8</java.version>
-        <spring-cloud.version>Greenwich.SR2</spring-cloud.version>
-    </properties>
+<project ...>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>acorn-microservices-tutorial</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-    <dependencyManagement>
-        ...
-    </dependencyManagement>
+</project>
 ----
-to
+After
 +
 [source,xml]
 ----
-    <properties>
-        <java.version>8</java.version>
-        <spring-cloud.version>Greenwich.SR2</spring-cloud.version>
-    </properties>
+<project ...>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>acorn-microservices-tutorial</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <modules>
         <module>items-service</module>
     </modules>
-
-    <dependencyManagement>
-        ...
-    </dependencyManagement>
+</project>
 ----
 ____
 
