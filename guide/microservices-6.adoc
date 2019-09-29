@@ -122,7 +122,8 @@ Connection refused (Connection refused) executing GET http://items-service/items
 If you retry again after roughly 30 seconds a new message should be seen
 +
 ----
-com.netflix.client.ClientException: Load balancer does not have available server for client: items-service should be seen.
+com.netflix.client.ClientException:
+Load balancer does not have available server for client: items-service should be seen.
 ----
 +
 The reason for the different messages is because initially the feign client fails to connect, which gives _Connection refused_. After 30 seconds or so, the service discovery server detects that `items-service` has not sent any heartbeats and removes it from the list of known services. When we access the resource again, we get _Load balancer does not have available server for client: items-service_.
