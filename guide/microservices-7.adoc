@@ -32,6 +32,20 @@ See https://cloud.spring.io/spring-cloud-gateway/reference/html/[Spring Cloud Ga
 
 Take a look at the below diagram, where the Gateway has been added. It will indeed be the entrance point for outside clients, and it will route requests downstream to the `webapi`. This means that outsiders have no other ways to access `items-service` and `reviews-service` than via `webapi`.
 
+process of routing and filtering requests
+
+does the dynamic routing of microservice applications
+
+Zuul Server dynamically routes the requests to the respective backend application.
+
+a place for cross cutting concerns
+
+http://localhost:20202/actuator/gateway/routes
+
+https://cloud.spring.io/spring-cloud-gateway/reference/html/
+
+curl -X GET http://localhost:20202/webapi/items --user frank:abc
+
 image::overview-7-gateway.png[]
 
 The gateway will obtain information on how to route to `webapi` from the `service-discovery-server`, in the same manner as we earlier saw the `webapi` access `items-service` and `reviews-service`.
