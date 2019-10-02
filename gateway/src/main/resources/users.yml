@@ -1,0 +1,11 @@
+localauth:
+    users:
+      - userId: "admin"
+        password: "{bcrypt}$2a$10$LSFBr7wQG1/AIkEdTzXOjOhK5lINUk4nQYfGKCjGvpe6m3XXUVE7y"
+        roles:
+          - administrator
+
+      - userId: "frank"
+        password: "{bcrypt}$2a$10$LSFBr7wQG1/AIkEdTzXOjOhK5lINUk4nQYfGKCjGvpe6m3XXUVE7y"
+        roles:
+          - employee
