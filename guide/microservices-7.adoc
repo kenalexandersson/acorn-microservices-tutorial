@@ -13,6 +13,20 @@ endif::[]
 == Gateway
  `items-service` and `reviews-service`
 
+process of routing and filtering requests
+
+does the dynamic routing of microservice applications
+
+Zuul Server dynamically routes the requests to the respective backend application.
+
+a place for cross cutting concerns
+
+http://localhost:20202/actuator/gateway/routes
+
+https://cloud.spring.io/spring-cloud-gateway/reference/html/
+
+curl -X GET http://localhost:20202/webapi/items --user frank:abc
+
 image::overview-7-gateway.png[]
 
 
