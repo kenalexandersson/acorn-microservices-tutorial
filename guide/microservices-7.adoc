@@ -32,21 +32,25 @@ See https://cloud.spring.io/spring-cloud-gateway/reference/html/[Spring Cloud Ga
 
 Take a look at the below diagram, where the Gateway has been added. It will indeed be the entrance point for outside clients, and it will route requests downstream to the `webapi`. This means that outsiders have no other ways to access `items-service` and `reviews-service` than via `webapi`.
 
-process of routing and filtering requests
+Spring has put the project `spring-cloud-starter-netflix-zuul` in maintenance mode, which means that no new development takes place there (only critical bug fixes). Instead Spring provides a replacement in the form of Spring Cloud Gateway. There is a distinct difference between the technology behind the two projects, Spring Cloud Gateway is built on Spring Framework 5, Project Reactor. This means that it uses non-blocking techniques when handling requests.
 
-does the dynamic routing of microservice applications
+Zuul (v1) is a blocking gateway while Spring Cloud Gateway is a non-blocking gateway. In case of non-blocking, the main thread is always available to serve the request and other multiple threads process those requests asynchronously in the background and once the request is completely processed the response is returned. Hence non-blocking model requires a less no of resources to serve the same amount of requests as compared to blocking gateway.
 
-Zuul Server dynamically routes the requests to the respective backend application.
 
-a place for cross cutting concerns
+See https://cloud.spring.io/spring-cloud-gateway/reference/html/[Spring Cloud Gateway reference] if you are interested in finding out more.
+
+====
+
+Take a look at the below diagram, where the Gateway has been added. It will indeed be the entrance point for outside clients, and it will route requests downstream to the `webapi`. This means that outsiders have no other ways to access `items-service` and `reviews-service` than via `webapi`.
+
+image::overview-7-gateway.png[]
+
+The gateway will obtain information on how to route to `webapi` from the `service-discovery-server`, in the same manner as we earlier saw the `webapi` access `items-service` and `reviews-service`.
 
 http://localhost:20202/actuator/gateway/routes
 
-https://cloud.spring.io/spring-cloud-gateway/reference/html/
-
 curl -X GET http://localhost:20202/webapi/items --user frank:abc
 
-image::overview-7-gateway.png[]
 
 The gateway will obtain information on how to route to `webapi` from the `service-discovery-server`, in the same manner as we earlier saw the `webapi` access `items-service` and `reviews-service`.
 
@@ -360,6 +364,234 @@ ____
 
 curl -X GET http://localhost:20202/webapi/items --user frank:abc
 
+
+=== Configuring the Gateway
+As we have done a couple of times earlier by now, we should add the Gateway config to the Config Server.
+
+* The application's general config should be defined in the central `config-server`
+* A `bootstrap.yml` file must be created, holding the config for binding to the `config-server`
+
+[quote]
+____
+. Create the file `config-server/src/main/resource/config/gateway.yml`
+. Add config to file:
++
+[source,yml]
+----
+zuul:
+  routes:
+    webapi:
+      sensitiveHeaders: Cookie,Set-Cookie,Authorization
+      stripPrefix: false
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      default-zone: http://localhost:8761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    org.springframework.security.web: info
+----
++
+. Rebuild the `config-server`
++
+[source,bash]
+----
+cd config-server
+mvn clean install -DskipTests
+----
++
+. Restart `config-server`
+. Verify that all looks good by accessing http://localhost:7777/gateway/default
+____
+
+Next create the `bootstrap.yml` and add config for binding to `config-server`
+[quote]
+____
+. Delete `gateway/src/main/resources/application.properties`
+. Create the file `gateway/src/main/resource/bootstrap.yml`
+. Add config to file:
++
+[source,yml]
+----
+spring:
+  application:
+    name: gateway
+  cloud:
+    config:
+      fail-fast: true
+      uri: http://localhost:7777
+
+server:
+  port: 20202
+----
+____
+
+=== Running the application
+You should be able to start the server by using one of these two options.
+
+Run from IDE::
+IntelliJ: There should be a Run configuration named `GatewayApplication` in the Services pane. Mark it and press the green play-button to start the application. This will build and run the app.
++
+Eclipse: TODO
+
+Run from command line:: It is also possible to execute it directly from a command prompt:
++
+[source, bash]
+----
+cd acorn-microservices-tutorial/gateway/target
+
+java -jar gateway-0.0.1-SNAPSHOT.jar
+----
+
+Take a look at the logs, the application should start fine.
+
+* Check the health status: http://localhost:20202/actuator/health
+* Check Eureka, the `gateway` should be registered: http://localhost:8761
+* Access http://localhost:20202/webapi/items
+
+Well, hooray, you should now have accessed the `webapi` properly.
+
+Now to the next part, find out what happens if you access one of the services behind `webapi` directly via the `gateway`:
+
+* http://localhost:20202/items-service/items
+
+What happened? Did you get a response with items?
+
+As it is setup right now, you should actually get a response from `items-service` looking like this:
+
+[source,json]
+----
+[
+  {
+    "id": 1,
+    "name": "Spoon",
+    "port": 8081
+  },
+  {
+    "id": 2,
+    "name": "Fork",
+    "port": 8081
+  },
+  {
+    "id": 3,
+    "name": "Knife",
+    "port": 8081
+  }
+]
+----
+
+In fact, this is true for all the other services as well, i.e. it is possible to access
+
+* http://localhost:20202/reviews-service/reviews
+
+* http://localhost:20202/service-discovery-server
+
+* (but not config-server, because it has not been registered in `service-discovery-server`)
+
+As stated in the beginning of this chapter, we do not want this behavior. Clients should only be able to access the system via the `gateway` which routes to the `webapi` only. So how can we tell the `gateway` to allow certain routes, but not others?
+
+One way to do it is to use a Zuul filter.
+
+=== Adding a Zuul filter
+
+At the center of Zuul is a series of Filters that are capable of performing a range of actions during the routing of HTTP requests and responses.
+
+The following are the key characteristics of a Zuul Filter:
+
+* Type: most often defines the stage during the routing flow when the Filter will be applied (although it can be any custom string)
+
+* Execution Order: applied within the Type, defines the order of execution across multiple Filters
+
+* Criteria: the conditions required in order for the Filter to be executed
+
+* Action: the action to be executed if the Criteria is met
+
+Zuul provides a framework to dynamically read, compile, and run these Filters. Filters do not communicate with each other directly - instead they share state through a RequestContext which is unique to each request.
+
+A visit to http://localhost:20202/actuator/filters shows the default Zuul filters that always are in effect. It is also possible to add custom filters to the filter chain, something we will do right now.
+
+Let's add a filter with the following abilities:
+
+ * Determine if the current request tries to access any forbidden services directly
+
+ * If so, halt the process and send back 404 Not Found.
+
+[quote]
+____
+. Start by adding a new class named ForbiddenPathFilter, `gateway/src/main/java/com/acorn/tutorial/gateway/routing/ForbiddenPathFilter.java`
+
+. Add this code:
++
+[source,java]
+----
+@Component
+public class ForbiddenPathFilter extends ZuulFilter {
+
+    @Override
+    public String filterType() {
+        /*
+         * The filter type decides when in the routing cycle the filter triggers.
+         * - PRE_TYPE: filters are executed before the request is routed
+         * - ROUTE_TYPE: route filters can handle the actual routing of the request
+         * - POST_TYPE: filters are executed after the request has been routed
+         * - ERROR_TYPE: filters execute if an error occurs in the course of handling the request
+         */
+        return PRE_TYPE;
+    }
+
+    @Override
+    public int filterOrder() {
+        // filter order decides where in the chain of Spring's predefined Zuul filters this filter should be placed.
+        // You can access http://localhost:20202/actuator/filters to see the filters in effect,
+        // We want to access the serviceId, which is populated by the inbuilt pre-decoration filter, so this filter must execute after that
+        return PRE_DECORATION_FILTER_ORDER + 1;
+    }
+
+    @Override
+    public boolean shouldFilter() {
+        // This decides if the filter should be executed in the current context
+        String serviceId = (String) RequestContext.getCurrentContext().get(SERVICE_ID_KEY);
+        return !isAllowedService(serviceId);
+    }
+
+    @Override
+    public Object run() {
+
+        // This method is only executed if shouldFilter() returns true
+
+        // Halt the process and return 404
+        RequestContext requestContext = RequestContext.getCurrentContext();
+        requestContext.unset();
+        requestContext.getResponse().setContentType("text/html");
+        requestContext.setResponseStatusCode(404);
+        requestContext.setSendZuulResponse(false);
+
+        return null;
+    }
+
+    private boolean isAllowedService(String serviceId) {
+        List<String> allowedServices = Collections.singletonList("webapi");
+        return serviceId != null && allowedServices.contains(serviceId);
+    }
+}
+----
++
+. Restart the application and check if you can see the filter in http://localhost:20202/actuator/filters
+
+. Access http://localhost:20202/items-service/items
+.. It should now return 404
+____
+
+=== Adding authentication
 
 <<microservices-8.adoc#,Nextup: Distributed tracing>>
 
