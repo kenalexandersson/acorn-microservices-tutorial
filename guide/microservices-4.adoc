@@ -1,0 +1,318 @@
+= Spring Cloud
+:toc: left
+:imagesdir: images
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+== Take a step back and look at the bigger picture
+Let's take some time and reflect upon things. We have an `items-service` and a `reviews-service` as core services in our application. They are built in Spring Boot, and both are utilizing Spring Cloud Config Server for getting configuration. The Config Server is in fact the only Spring Cloud tool used so far.
+
+[NOTE]
+Also worth noting is that the browser/client does call both services directly, which means that a client needs to be aware of where these are running and hence need to know the hostname and ports to use for accessing them.
+
+If we revisit the schematic overview from the beginning of the tutorial, we see that there is some distance to cover before we have all the tools in place:
+
+.Schematic overview of the target result of the tutorial
+image::schematic-overview.png[]
+
+Here we see that we are still missing the Spring Cloud tools supporting the _Gateway_, _Service Discovery_ and _Client load balancing_ micro services patterns.
+
+We also need to implement the _WebApi_ component, which isn't a Spring Cloud tool but it will use Spring Cloud and act in that environment. So what is the WebApi and why do we use it?
+
+Well upon first look the _WebApi_ component is the entrance API for fetching information from the underlying _Items_ and _Reviews_ services. Any interested client will call the WebApi to, say, request item info and reviews for an item X. The client calls the WebApi only and hence does not need to know the addresses to the _items_/_reviews_ services (in fact we don't want an outside client to know about this).
+
+=== Backends For Frontends
+There is an architectural pattern known as Backends for Frontends (BFF) that our solution is influenced by. We will not deep dive in this pattern here, but the gist of it is as follows:
+
+Instead of providing a general purpose API that is used by several types of clients, like a _web application_ (written in React, Angular, Vue or whatever) or a _mobile client_ (iOS, Android), BFF is all about providing a tailored API for the web application, and another tailored API for the mobile client.
+
+image::bff.png[]
+
+This allows each BFF to aggregate and structure the response data to the particular needs of it's client. The BFF knows which services to call to do the job, effectively shielding clients from the inner complexity of the services setup.
+
+[TIP]
+====
+For more about BFF:
+https://philcalcado.com/2015/09/18/the_back_end_for_front_end_pattern_bff.html
+https://samnewman.io/patterns/architectural/bff/
+====
+
+=== The need for service discovery
+The _WebApi_ component is our BFF for an imagined web application (we do not bother fixing a sibling BFF targeting mobile apps in this tutorial). If the WebApi is our BFF, then we are about to touch upon the very problem _Service Discovery_ is here to solve:
+
+Problem:: The WebApi must be configured with the addresses and ports where it should find relevant services. But what if these services goes up and down, sometimes starting up again possibly on another location? Or if several instances of the same service are started dynamically, how does this align with the concept of static configuration such as application.yml (i.e. where hostnames and ports would be hardcoded)?
++
+The question is: How do clients determine the location (IP address and port) of services in an environment where addresses get assigned dynamically?
+
+Solution:: The Service Discovery microservices pattern aims at solving the above problem. When clients make requests (in our case to WebApi), the WebApi queries a service registry, and forwards the requests to available service instances obtained from the registry.
++
+A prerequisite for this to work is that each service during startup must automatically register to the Service Discovery server. Each service must also notify the discovery service on shut down so they can be removed.
+
+=== Road map
+Given the above musings, it makes sense to continue our implementation effort in this order.
+
+* Adding Service Discovery Server
+* Enable registering of existing `items-service` and `reviews-service` to registry
+* Create the WebApi component `webapi` which discovers the above services using the Service Discovery Server and then calls them
+
+== Service Discovery Server
+The idea behind a discovery server is to support a couple of central concepts.
+
+* Service Registration: The process of a service registering itself and it's location to the central registry. Usually it register it's host and port only, but can also provide arbitrary environment details if needed.
+
+* Service Discovery: The process of a client fetching information from the central registry to get knowledge about locations of services.
+
+Service instances are responsible for registering and deregistering themself with the service registry. Each service instance also sends heartbeat requests to prevent registration from expiring, which means that if heartbeats stops coming to the discovery server for a particular service, this service will eventually be removed.
+
+In this tutorial we are going use an implementation of Discovery Server named _Eureka_. Our next task is to create a project that uses it. When we are done with this section, there will be a Eureka instance up and running which `items-service` and `reviews-service` register themselves to.
+
+image::overview-4-service-discovery.png[]
+
+=== Creating the project
+
+[quote]
+____
+. Go to https://start.spring.io/ (or use IntelliJ `New -> Module... -> Spring Initializr`)
+. Enter the following values in fields:
+.. `Group:` com.acorn.tutorial
+.. `Artifact:` service-discovery-server
+. Add dependencies (search for them and select):
+.. Eureka Server
+.. Spring Config Client
+.. Spring Boot Actuator
+. Click `Generate the project`
+. If using https://start.spring.io: open the resulting zip and copy the items-service directory to the root of the project (acorn-microservices-tutorial)
+____
+
+[TIP]
+====
+Let's remove some autogenerated files we don't need, delete the following files from project:
+
+- service-discovery-server/.mvn (the whole dir)
+- service-discovery-server/.gitignore
+- service-discovery-server/HELP.md
+- service-discovery-server/mvnw
+- service-discovery-server/mvnw.cmd
+====
+
+Next edit the parent pom.xml so that it becomes aware of the child project:
+[quote]
+____
+. Open `acorn-microservices-tutorial/pom.xml`
+. Add `service-discovery-server` to the modules list in the parent pom:
++
+[source,xml]
+----
+    ...
+
+    <modules>
+        <module>config-server</module>
+        <module>service-discovery-server</module>
+        <module>items-service</module>
+        <module>reviews-service</module>
+    </modules>
+
+    ...
+----
+____
+
+Build the project to verify that all is glued together correctly, and for downloading dependencies:
+[source, bash]
+----
+# Run mvn clean install from the acorn-microservices-tutorial directory
+mvn clean install -DskipTests
+----
+
+Note that you must run the command with the flag `-DskipTests`, if not an autogenerated Spring test will fail.
+
+Expected outcome after running the command:
+
+[source]
+----
+[INFO] Reactor Summary:
+[INFO]
+[INFO] acorn-microservices-tutorial ....................... SUCCESS [  6.626 s]
+[INFO] config-server ...................................... SUCCESS [ 13.495 s]
+[INFO] service-discovery-server ........................... SUCCESS [  1.111 s]
+[INFO] items-service ...................................... SUCCESS [  4.785 s]
+[INFO] reviews-service .................................... SUCCESS [  1.945 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+----
+
+=== Configuring the Service Discovery Server
+The first thing to configure is to hook up the Service Discovery Server with the Config Server.
+
+* The application's general config should be defined in the central `config-server`
+* A `bootstrap.yml` file must be created, holding the config for binding to the `config-server`
+
+[quote]
+____
+. Create the file `config-server/src/main/resource/config/service-discovery-server.yml`
+. Add config to file:
++
+[source,yml]
+----
+server:
+  port: 8761
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: false
+----
++
+. Rebuild the `config-server`
++
+[source,bash]
+----
+cd config-server
+mvn clean install -DskipTests
+----
++
+. Restart `config-server`
+. Verify that all looks good by accessing http://localhost:7777/reviews-service/default
+____
+
+Next create the `bootstrap.yml` and add config for binding to `config-server`
+[quote]
+____
+. Delete `service-discovery-server/src/main/resources/application.properties`
+. Create the file `service-discovery-server/src/main/resource/bootstrap.yml`
+. Add config to file:
++
+[source,yml]
+----
+spring:
+  application:
+    name: service-discovery-server
+  cloud:
+    config:
+      uri: http://localhost:7777
+      fail-fast: true
+----
+____
+
+Next up is to explicitly instruct Spring to enable the Eureka server.
+
+[quote]
+____
+. Enable the server by adding the annotation `@EnableConfigServer` to `ConfigServerApplication` class in the `service-discovery-server` project.
++
+.Example of enabled server
+[source,java]
+----
+@EnableEurekaServer
+@SpringBootApplication
+public class ServiceDiscoveryServerApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ServiceDiscoveryServerApplication.class, args);
+    }
+
+}
+----
+____
+
+=== Running the server
+You should be able to start the server by using one of these two options.
+
+Run from IDE::
+IntelliJ: There should be a Run configuration named `ServiceDiscoveryServerApplication` in the Services pane. Mark it and press the green play-button to start the application. This will build and run the app.
++
+Eclipse: TODO
+
+Run from command line:: It is also possible to execute it directly from a command prompt:
++
+[source, bash]
+----
+cd acorn-microservices-tutorial/service-discovery-server/target
+
+java -jar service-discovery-server-1.0-SNAPSHOT.jar
+----
+
+[WARNING]
+====
+If the `service-discovery-server` does not start due to these errors:
+
+`Caused by: java.lang.IllegalStateException: StandardEngine[Tomcat].StandardHost[localhost].TomcatEmbeddedContext[] failed to start`
+
+and higher up in the logs
+
+`Caused by: java.lang.ClassNotFoundException: javax.xml.bind.JAXBContext`
+
+Then please check if you are running the application using Java 9 or above. From version 9 and onwards, the Java EE module is removed from the JDK. The classes not found here were in that module.
+
+How to fix (choose one of the two):
+
+Option 1:: Edit the runtime environment in your IDE (if you run the app from there) to Java 8 (if installed)
+
+Option 2:: Add these dependencies to `service-discovery-server/pom.xml`
++
+[source,xml]
+----
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>javax.activation</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+----
+
+====
+
+Take a look at the logs, the application should start fine.
+
+* Check the health status: http://localhost:8176/actuator/health
+
+* Browse to the Eureka UI at http://localhost:8176, expected result:
+
+image::eureka-ui.png[]
+
+Please note _Instances currently registered with Eureka_, which tell us  that `service-discovery-server` has registered with itself.
+
+=== Registering the other services with Service Discovery Server
+It is very easy to register `items-services` and `reviews-services` with `service-discovery-server`. All that is needed is to add the dependency to _spring-cloud-starter-netflix-eureka-client_ in each pom.xml, and the Spring Cloud automagic will do the trick.
+
+[quote]
+____
+. Open the pom files of `items-services` and `reviews-services`
+. Add the below dependency
++
+[source,xml]
+----
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+----
++
+. Start the two services
+. Reload Eureka UI at http://localhost:8761/. Both services should be properly registered in `service-discovery-server`.
+____
+
+The Service Discovery Service is now in place and are ready to register services in our domain. So far we have covered the registration part only. Now it is time to start using the discovery service for looking up other services, something that the _Gateway_ and _WebApi_ will need to do. Let us start with the WebApi.
+
+<<microservices-5.adoc#,Nextup: WebApi>>
+

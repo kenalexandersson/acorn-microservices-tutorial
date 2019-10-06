@@ -1,0 +1,532 @@
+= Spring Cloud
+:toc: left
+:imagesdir: images
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+In this tutorial you will focus on developing an application that will run in an environment using an assorted set of microservices patterns. The main purpose is to highlight how Spring Cloud helps in such an environment, to get an understanding of how it all works.
+
+The tutorial is purposely designed to hold your hand and show you step by step what to do. The main goal is not to challenge your problem solving skills, instead we want to focus on presenting Spring Cloud concepts in small chunks, eventually leading up to a working application.
+
+With that said, don’t blindly just copy and paste the code without reflecting on it. The tutorial will try to make you think about things here and there, but if you find any step confusing or lacking in description, please bring it up during the session so we can discuss it.
+
+== Overview of the application components
+image::schematic-overview.png[]
+
+We are going to build a set of Java https://spring.io/projects/spring-boot[Spring Boot] components using https://spring.io/projects/spring-cloud[Spring Cloud] tools. Some of these components will implement common microservices patterns used in distributed systems, these are hence of a more supportive nature.
+
+Config Server:: The Config server's responsibility is to be the central for configuration of all other components.
+
+Gateway:: The Gateway is the single point entrance to the outside world. Clients from the outside must go through the Gateway to access the inner services. A key role of the Gateway is to route incoming requests to the right service.
+
+Service Discovery and Client Loadbalancer:: All services in the application will register to Service Discovery server. This allow Spring Cloud components to automatically find each other. The Client Load Balancer will help in evenly distributing requests to multiple running instances of the same microservice.
+
+Along with the above we also need microservices that takes the role as our business components, the ones serving data that clients are interested in.
+
+Items Service:: This service is responsible for handling _items_. It stores items and can retrieve information about items on demand.
+
+Reviews Service:: Manages customer _reviews_ regarding _items_. It stores reviews and can retrieve information about reviews on demand.
+
+Web API:: Acts as an aggregating API, it knows what services to call in order to aggregate certain information (in our case from _items service_ and _reviews service_).
+
+
+
+We will explain more about each component when we start working on them, but before getting started with that, there is something to be said about _Maven_ and also _Spring Initializr_
+
+== Maven
+Maven is a build and dependency management tool widely used in the Java echo system.
+
+[NOTE]
+If you have been working with Java and Maven you can stop reading now, we are not going to say anything new on the matter. But please read on if you are not so familiar with Maven since it may save one or two WTF:s along the way.
+
+At the core of a https://maven.apache.org/[Maven] project is the `pom.xml` file (stands for Project Object Model), which is an XML-representation of how the project is setup. In here you specify what should be built in the project, and all project dependencies to other components (internal or third-party) are declared here.
+
+The projects we are going to build will have dependencies to several Spring Cloud components.
+
+A Maven project is built by executing the command `mvn clean install`, which will automatically download all dependencies specified (and all dependencies these first dependencies in turn may require). This can take a while, like a minute or two. The download will only happen if any dependencies are missing on your computer, so the next time you build, the console output will not be quite so busy as the first time.
+
+The downloaded dependencies are typically stored under a directory named `.m2` in your user directory.
+
+== Spring Initializr
+
+Spring Boot provides a tool for quickly setting up a base Maven project with dependencies to various Spring components, which can be searched for and added to project in a wizard-like manner. https://start.spring.io/[Spring Initializr] basically creates a `pom.xml` file for you with everything needed for running the selected components.
+
+image::initializr.png[]
+
+You will use this tool when creating the components in this tutorial.
+
+Which we incidentally will be start doing right now. Let's begin with the first service, the _Items Service_.
+
+== Items Service
+Imagine a small, nifty microservice that is excellent in handling items. It is in fact so nifty that it doesn't know anything else than just how to handle items. It stores items in a database and provides a REST-API for accessing these.
+
+The requirements list aren't to big, it basically boils down to:
+
+* The REST-API should provide resources for getting all items, `/items/`, and for getting a specific item, `/items/{itemId}`.
+
+* The items should be stored in a H2 in-memory database.
+
+This is of course a highly simplified service, but it is enough for our purposes. Let's begin implementing it.
+
+=== Creating the project
+
+[quote]
+____
+. Go to https://start.spring.io/
+. Enter the following values in fields:
+.. `Group:` com.acorn.tutorial
+.. `Artifact:` items-service
+. Add dependencies (search for them and select):
+.. Spring Data JPA
+.. Spring Web
+.. Lombok
+.. Spring Boot Actuator
+.. H2 Database
+. Click `Generate the project`
+. Open the resulting zip and copy the items-service directory to the root of the project (acorn-microservices-tutorial)
+____
+
+Alternative way using IntelliJ:
+[quote]
+____
+. Right-click acorn-microservices-tutorial in the Project pane, select `New -> Module...`
+. Select `Spring Initializr`
+. In the Project Metadata dialog, enter the following fields:
+.. `Group:` com.acorn.tutorial
+.. `Artifact:` items-service
+. Click `Next`
+. Add dependencies (search for them and select):
+.. Spring Data JPA
+.. Spring Web
+.. Lombok
+.. Spring Boot Actuator
+.. H2 Database
+. Click `Next`
+. Click `Finish`
+____
+
+Now we need to make the copied project into a child-project of the initial maven project. This means that it is time for edit the parent pom.xml file.
+
+[quote]
+____
+. Open `acorn-microservices-tutorial/pom.xml`
+. Add `items-service` as module in the parent pom:
++
+Before
++
+[source,xml]
+----
+<project ...>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>acorn-microservices-tutorial</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+</project>
+----
+After
++
+[source,xml]
+----
+<project ...>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>acorn-microservices-tutorial</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>items-service</module>
+    </modules>
+</project>
+----
+____
+
+[TIP]
+====
+Let's remove some autogenerated files we don't need, delete the following files from project:
+
+- items-service/.mvn (the whole dir)
+- items-service/.gitignore
+- items-service/HELP.md
+- items-service/mvnw
+- items-service/mvnw.cmd
+====
+
+Very good. We are now in a position where we should be able to build the Maven project successfully. Do this by running the command
+[source, bash]
+----
+# Run mvn clean install from the acorn-microservices-tutorial directory
+mvn clean install -DskipTests
+----
+
+Note that you must run the command with the flag `-DskipTests`, if not an autogenerated Spring test will fail.
+
+Expected outcome after running the command:
+
+[source]
+----
+[INFO] Reactor Summary:
+[INFO]
+[INFO] acorn-microservices-tutorial ....................... SUCCESS [  0.745 s]
+[INFO] items-service ...................................... SUCCESS [  2.767 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+----
+
+=== Running the application
+Ok, the Maven project is now setup and the application has been successfully built. It is actually possible to run it already, even though we haven't added anything that resembles Java code yet.
+
+Run the app by using one of these two options.
+
+Run from IDE:: Both IntelliJ and Eclipse can execute Spring Boot applications, which is the most convenient approach and recommended hereafter.
++
+IntelliJ: There should be a Run configuration named `ItemsServiceApplication` already created, available near the top right corner of the IDE. Press the green play-button to start the application. This will build and run the app.
++
+Eclipse: TODO
+
+Run from command line:: It is also possible to execute it directly from a command prompt if you fancy:
++
+[source, bash]
+----
+cd acorn-microservices-tutorial/items-service/target
+
+java -jar items-service-1.0-SNAPSHOT.jar
+----
+
+The application is up and running successfully if the console output is quite serene (no wild exception or error logs flying around) and if you see this as the last log entry:
+
+[source, bash]
+----
+2019-09-09 18:53:13.394  INFO 11412 --- [           main] c.a.t.i.ItemsServiceApplication          : Started ItemsServiceApplication in 2.745 seconds (JVM running for 3.475)
+----
+
+It also possible to check the health status of the app by accessing http://localhost:8080/actuator/health, which should result in a rather dry but informative JSON-message.
+
+[source, json]
+----
+{
+"status": "UP"
+}
+----
+
+[NOTE]
+====
+If you have been glancing the log output, your keen eyes have probably noticed some things that perhaps raises questions. Like the application has been started with a Tomcat running on port 8080, that a JPA EntityManagerFactory has been initialized, and Hibnernate seems to be configured using the dialect org.hibernate.dialect.H2Dialect.
+
+What does all this come from, and why port 8080?
+
+The short answer is: Spring Boot relies heavily on the concept of convention over configuration. We did add a set of Maven dependencies that brings in JPA, Hibernate and H2 (in-memory) DB to the classpath. We didn't configure any of them, so Spring Boot starts them using _sensible_ default values. Port 8080 is also the default value used for Tomcat if nothing else is specified.
+
+This behavior can give Spring Boot an aura of _automagic_, things work even if you don't know why. This is something you may both love and hate (the latter when things go wrong), but it is convenient for quickly spinning up things. It is of course possible to define our own config, as we will do now.
+====
+
+=== Configuring the Items Service application
+
+We need to add some configuration to the project, which is typically done in `src/main/resources/application.properties`.
+
+[NOTE]
+For now we will add the configuration locally in the project. Later on in the tutorial we will start centralize the configuration and put it into the Config Server instead.
+
+The file `application.properties` is an ordinary properties file as they usually come in the Java echo system, properties are declared in the normal _key=value_ fashion.
+
+Spring also supports files written in yaml-format, which has the benefit of showing the properties more orderly. In this tutorial we will go with yaml-files.
+
+So in order to add the props we want, rename `application.properties` to `application.yml` and add this config to the file:
+[source,yml]
+----
+# This is the name of the application, will later be needed since it will be used by other components in Spring Cloud to identify the application.
+spring:
+  application:
+    name: items-service
+
+  # Enabling h2 console, accessible at http://localhost:8080/h2-console
+  # (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank))
+  h2:
+    console:
+      enabled: true
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: false
+
+logging:
+  file: /tmp/codingsession/logs/items-service.log
+  level:
+    ROOT: INFO
+    org.hibernate.stat: INFO
+    org.hibernate.type: INFO
+
+# The server port to use on startup. This is incidentally the same as the default 8080, but is shown for clarity. If you change the port to any other value, this will be used instead (please go ahead and try if you don't believe us saying so)
+server:
+  port: 8080
+----
+
+=== Adding source code
+
+It is high time to cut the crap and start adding some proper code. We must implement the features needed for serving _Items_.
+
+This is what we should add:
+
+* A model class that will define how an Item object will look like. This will also take the role of an JPA-entity so it can be stored in database.
+* A Spring-JPA repository class that will handle the persistence of Item objects.
+* A Spring RestController class that will act as the REST-API to the outside, which will provide resources for retrieving _Item_ objects and present them on JSON-format
+* A DTO (data transfer object) that represents the JSON reponse
+
+==== Model class
+Let's start with the model class that defines the  attributes of an item.
+
+[quote]
+____
+. Create a new package under `items-service/src/main/java/com/acorn/tutorial/itemsservice`, name it `model`
+. Add a file named `Items.java` with the below content:
++
+[source,java]
+----
+@Data
+@NoArgsConstructor
+@Entity
+public class Item {
+
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long id;
+
+    private String name;
+}
+----
++
+Here is a short description of the annotations if you are not familiar with them.
++
+|===
+|Annotation |Description
+
+|@Data
+|Lombok-annotation, does generate getters/setters, toString, equals, hashcode, and a all args constructor
+
+|@NoArgsConstructor
+|Lombok-annotation, creates a no arguments constructor, which is needed by JPA.
+
+|@Entity
+|JPA-annotation, represents a POJO that can be persisted to database.
+
+|@Id
+|JPA-annotation, basically defines the identity of the entity, which will become the primary key in database.
+
+|@GeneratedValue
+|JPA-annotation, tells which strategy to use when generating identifier values. _GenerationType.AUTO_ means that we let the JPA-provider (in our case Hibernate) decide which strategy to use.
+|===
+____
+
+==== Repository class
+Next to do is to add the repository class that will help us to store items in the database.
+[quote]
+____
+. Create a new package `items-service/src/main/java/com/acorn/tutorial/itemsservice/repository`
+. Add a file named `ItemRepository.java` with the below content:
++
+[source,java]
+----
+@Repository
+public interface ItemRepository extends JpaRepository<Item, Long> {
+
+}
+----
+____
+
+This is actually enough code for making Spring Data JPA setup the database for handling _Item_ objects. The Spring automagic kicks in here. Just the simple act of having the dependencies `org.springframework.boot:spring-boot-starter-data-jpa` and `com.h2database:h2` brought in to the project's classpath, will allow Spring Data JPA to read our entity class and setup the database with the needed table.
+
+You can check this for yourself by starting the application, then browse to http://localhost:8080/h2-console, use JDBC URL: jdbc:h2:mem:testdb and log in using User _sa_ and no password:
+
+image::H2Console.png[]
+
+Once logged in you should be able to see a listing of database tables.
+
+[TIP]
+This is not a tutorial in using Spring Data JPA so we will leave it without deeper explanation, but for those interested in details, please see https://dzone.com/articles/spring-data-jpa-1 or visit the official reference at https://docs.spring.io/spring-data/jpa/docs/current/reference/html/
+
+There is one final automagic thing to do before we leave the persistence topic for this time. It would be nice if we could have some dummy data loaded into the system. This can be achieved by simply adding a file named `src/main/resources/data.sql` containing a couple of INSERT statements:
+
+[quote]
+____
+. Create the file `items-service/src/main/resource/data.sql`
+. Add some items:
++
+[source,sql]
+----
+insert into item(id, name) values(1, 'Spoon');
+insert into item(id, name) values(2, 'Fork');
+insert into item(id, name) values(3, 'Knife');
+----
+____
+
+That's it! Restart the application, log in to http://localhost:8080/h2-console again and run
+
+[source,sql]
+SELECT * FROM ITEM
+
+Now you should see what you expect to see. ;)
+
+So now we do have a database storing _Item_ objects, and the application is connected to it. Spring Data JPA will give us a set of pre-existing methods for  getting data from the database. We will start using these in the next section.
+
+==== RestController class
+The purpose of this class is to provide a REST-API to the surrounding microservices environment.
+
+[quote]
+____
+. Create package `items-service/src/main/java/com/acorn/tutorial/itemsservice/web`
+. Add a file named `ItemServiceController.java` with the below content:
++
+[source,java]
+----
+@RestController
+public class ItemsServiceController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ItemsServiceController.class);
+
+    private ItemRepository itemRepository;
+
+    private Environment environment;
+
+    @Autowired
+    public ItemsServiceController(ItemRepository itemRepository, Environment environment) {
+        this.itemRepository = itemRepository;
+        this.environment = environment;
+    }
+
+    @GetMapping(path = "/items", produces = "application/json")
+    public List<ItemDto> getAllItems() {
+        return itemRepository.findAll().stream()
+                .map(this::toItemDto)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping(path = "/items/{id}", produces = "application/json")
+    public ItemDto getItem(@PathVariable Long id) {
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException(id));
+
+        return toItemDto(item);
+    }
+
+    private ItemDto toItemDto(Item item) {
+        int port = Integer.parseInt(environment.getProperty("local.server.port", "0"));
+        final ItemDto itemDto = ItemDto.of(item, port);
+        LOGGER.info(String.format("Returning %s", itemDto));
+        return itemDto;
+    }
+}
+----
+____
+
+The above code creates a Spring REST controller providing the resource endpoints `GET /items` and `GET /items/{id}`. The previously created `Item` and `ItemRepository` classes are used here. Pay close attention to the `itemRepository.findAll()` and `itemRepository.findById(id)` methods, which are provided to us through Spring Data JPA.
+
+Right now the code does not compile, a couple of classes are still missing. Let's create them while we are at it.
+
+==== ItemDto
+The ItemDto is just a POJO that represents the JSON structure to send out to callers of the REST API.
+
+[quote]
+____
+. Create file `items-service/src/main/java/com/acorn/tutorial/itemsservice/web/ItemDto.java`
+. Add this code:
++
+[source,java]
+----
+@Data
+@AllArgsConstructor
+public class ItemDto {
+
+    private Long id;
+    private String name;
+    private int port;
+
+    public static ItemDto of(Item item, int port) {
+        return new ItemDto(item.getId(), item.getName(), port);
+    }
+}
+----
+____
+
+==== ItemNotFoundException and ItemNotFoundAdvice
+The final classes to add in order to get everything under control are the `ItemNotFoundException` class that is thrown when an `Item` cannot be found, and the `ItemNotFoundAdvice` class that will handle the exception and produce the appropriate response status code to send back to client.
+
+[quote]
+____
+. Create new file `items-service/src/main/java/com/acorn/tutorial/itemsservice/web/ItemNotFoundException.java`
++
+[source,java]
+----
+public class ItemNotFoundException extends RuntimeException {
+    public ItemNotFoundException(Long id) {
+        super(String.format("Failed to find item with id: %d", id));
+    }
+}
+----
+____
+
+[quote]
+____
+. Create new file `items-service/src/main/java/com/acorn/tutorial/itemsservice/web/ItemNotFoundAdvice.java`
++
+[source,java]
+----
+@ControllerAdvice
+public class ItemNotFoundAdvice {
+
+    @ResponseBody
+    @ExceptionHandler(ItemNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String itemNotFoundHandler(ItemNotFoundException ex) {
+        return ex.getMessage();
+    }
+}
+----
+____
+
+This work pretty much sums it up. We now have our small and astoundingly simple microservice in place, ready to serve items to interested clients.
+
+Please start the application and verify that it works by accessing it via
+
+* http://localhost:8080/items
+* http://localhost:8080/items/1
+* http://localhost:8080/items/2
+* http://localhost:8080/items/3
+* http://localhost:8080/items/99
+
+You should be able to see the all items from database (unless item with number 99, since it is not there).
+
+[source,json]
+----
+[
+    {
+        "id": 1,
+        "name": "Spoon",
+        "port": 8080
+    },
+    {
+        "id": 2,
+        "name": "Fork",
+        "port": 8080
+    },
+    {
+        "id": 3,
+        "name": "Knife",
+        "port": 8080
+    }
+]
+----
+
+Let us take a step back and assess where we are right now. We have created a microservice with some simple features. It is fun that it works, but so far we haven't used any of the tools in Spring Cloud to start leveraging the microservices patterns we are interested in.
+
+Take a short leg stretcher and come back when you are ready to start work in the Config Server.
+
+<<microservices-2.adoc#,Nextup: Config Server>>
