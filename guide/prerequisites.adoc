@@ -45,6 +45,9 @@ The output from the running application will be on JSON format, so make sure tha
 Chrome:: https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=sv[Chrome JSON formatter]
 Firefox:: Newer versions of Firefox, from version 53 and onwards, have a JSON viewer incorporated by default.
 
+=== Docker
+docker run -d --name zipkin -p 9411:9411 openzipkin/zipkin
+
 === Clone this project from GitHub
 And finally, clone this project to your computer since we will use it as a base for the tutorial.
 
