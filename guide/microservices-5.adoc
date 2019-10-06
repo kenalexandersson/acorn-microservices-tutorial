@@ -241,16 +241,24 @@ ____
 +
 [source,java]
 ----
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 public class WebApiController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebApiController.class);
+
     @GetMapping(path = "/webapi/items")
     public List<ItemInfoDto > getItems() {
+        LOGGER.info("/webapi/items called");
+
         return Collections.singletonList(ItemInfoDto.of(null, null));
     }
 
     @GetMapping(path = "/webapi/items/{id}")
     public ItemInfoDto getItem(@PathVariable Long id) {
+        LOGGER.info(String.format("/webapi/items/%d called", id));
 
         return ItemInfoDto.of(null, null);
     }
@@ -427,6 +435,7 @@ public class WebApiController {
 
     @GetMapping(path = "/webapi/items")
     public List<ItemInfoDto> getItems() {
+        LOGGER.info("/webapi/items called");
 
         List<Item> items = itemsClient.getItems();
         List<Review> reviews = reviewsClient.getReviews("item");
@@ -460,6 +469,7 @@ public class WebApiController {
 
     @GetMapping(path = "/webapi/items/{id}")
     public ItemInfoDto getItem(@PathVariable Long id) {
+        LOGGER.info(String.format("/webapi/items/%d called", id));
 
         Item item = itemsClient.getItem(id);
         List<Review> reviews = reviewsClient.getReviews("item", id);
@@ -476,6 +486,9 @@ The complete `WebApiController` class should now look like this.
 
 [source,java]
 ----
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 public class WebApiController {
 

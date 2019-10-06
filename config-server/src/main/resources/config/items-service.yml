@@ -10,6 +10,9 @@ spring:
         format_sql: true
         generate_statistics: false
 
+  zipkin:
+    base-url: http://localhost:9411
+
 logging:
   file: /tmp/codingsession/logs/items-service.log
   level:
