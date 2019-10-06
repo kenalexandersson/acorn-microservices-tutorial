@@ -37,7 +37,7 @@ Eclipse:: https://projectlombok.org/setup/eclipse
 Netbeans:: https://projectlombok.org/setup/netbeans
 
 === Install Maven
-You will need Maven (a build and dependency managemnt tool) during the tutorial. Please download and install through https://maven.apache.org/download.cgi
+You will need Maven (a build and dependency management tool) during the tutorial. Please download and install through https://maven.apache.org/download.cgi
 
 === JSON viewer plugin for web browser
 The output from the running application will be on JSON format, so make sure that your browser can present it somewhat better than just a one line text blob.
@@ -46,11 +46,16 @@ Chrome:: https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfp
 Firefox:: Newer versions of Firefox, from version 53 and onwards, have a JSON viewer incorporated by default.
 
 === Docker
+If you have Docker installed on your system, then download on beforehand an image we will use:
+[source,bash]
 docker run -d --name zipkin -p 9411:9411 openzipkin/zipkin
+
+[NOTE]
+If you do not have Docker installed and don't want to install it, then just leave it. We can use an alternative way during the session (but please notify me about it).
 
 === Clone this project from GitHub
 And finally, clone this project to your computer since we will use it as a base for the tutorial.
 
 `git clone https://github.com/kenalexandersson/acorn-microservices-tutorial`
 
-Or https://github.com/kenalexandersson/acorn-microservices-tutorial/archive/master.zip[download it as zip] and extract the content to a location of your choice
+Or https://github.com/kenalexandersson/acorn-microservices-tutorial/archive/master.zip[download it as zip] and extract the content to a location of your choice.
