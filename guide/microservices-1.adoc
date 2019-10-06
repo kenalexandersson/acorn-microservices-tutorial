@@ -282,7 +282,7 @@ This is what we should add:
 * A DTO (data transfer object) that represents the JSON reponse
 
 ==== Model class
-asdasd
+Let's start with the model class that defines the  attributes of an item.
 
 [quote]
 ____
