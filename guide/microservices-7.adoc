@@ -13,7 +13,7 @@ endif::[]
 == Gateway
 A gateway provides a single entry point for all the microservices running downstream, it's main responsibility is to handle the process of routing and filtering requests. The gateway can either dynamically route the requests to the respective backend application, or use predefined routes (declared in config) to achieve the same thing.
 
-Since a gateway often is the entrance point into the application's microservices eco system, it is common to use it as a place for cross cutting concerns. Examples of this are to let the gateway component to handle authentication, or let it gather and manage various metrics.
+Since a gateway often is the entrance point into the application's microservices eco system, it is common to use it as a place for cross cutting concerns. Examples of this are to let the gateway component handle authentication, or let it gather and manage various metrics.
 
 We will create a gateway server based on https://cloud.spring.io/spring-cloud-netflix/reference/html/#router-and-filter-zuul[Spring Cloud Netflix Zuul], which uses dynamic routing by looking up and creating routes from the `service-discovery-server`. We will also add a simple authentication implemention to it.
 
@@ -35,12 +35,6 @@ Take a look at the below diagram, where the Gateway has been added. It will inde
 image::overview-7-gateway.png[]
 
 The gateway will obtain information on how to route to `webapi` from the `service-discovery-server`, in the same manner as we earlier saw the `webapi` access `items-service` and `reviews-service`.
-
-http://localhost:20202/actuator/gateway/routes
-
-curl -X GET http://localhost:20202/webapi/items --user frank:abc
-
-
 
 === Creating the project
 
@@ -246,7 +240,7 @@ As it is setup right now, you should actually get a response from `items-service
 ]
 ----
 
-In fact, this is true for all the other services as well, i.e. it is possible to access
+In fact, this is true for all the other services as well (you can see them listed at http://localhost:20202/actuator/routes.). It is hence possible to also access
 
 * http://localhost:20202/reviews-service/reviews
 
@@ -349,6 +343,9 @@ public class ForbiddenPathFilter extends ZuulFilter {
 ____
 
 === Adding authentication
+
+curl -X GET http://localhost:20202/webapi/items --user frank:abc
+
 
 <<microservices-8.adoc#,Nextup: Distributed tracing>>
 
