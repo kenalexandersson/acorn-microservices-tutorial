@@ -19,7 +19,7 @@ Whatever you choose, please make sure to fix the below before turning up at the 
 === Install a decent editor
 A fairly decent editor is a must to help you out during coding, preferably one with content assist and auto-completion. Choose one below.
 
-If you are working regularly with Java you will probably already have IntelliJ or Eclipse, which is fine. Netbeans will probably work as well I guess (never used it myself so really I don't know).
+If you are working regularly with Java you will probably already have IntelliJ or Eclipse, which is fine. Netbeans will probably work as well I guess (never used it myself so I really don't know).
 
 If you do not have any of the above, it is recommended to download and install IntelliJ Community, which is free.
 
@@ -46,7 +46,7 @@ Chrome:: https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfp
 Firefox:: Newer versions of Firefox, from version 53 and onwards, have a JSON viewer incorporated by default.
 
 === Docker
-If you have Docker installed on your system, then download on beforehand an image we will use:
+If you have Docker installed on your system, then please download this image:
 [source,bash]
 docker run -d --name zipkin -p 9411:9411 openzipkin/zipkin
 
