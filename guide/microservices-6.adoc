@@ -72,7 +72,7 @@ cd webapi
 mvn clean install -DskipTests
 
 # Start the instance using port 8085
-java -jar target/webapi-1.0-SNAPSHOT.jar --server.port=8085
+java -jar target/webapi-0.0.1-SNAPSHOT.jar --server.port=8085
 ----
 +
 . Access http://localhost:8100/webapi/items
