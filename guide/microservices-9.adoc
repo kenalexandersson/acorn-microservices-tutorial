@@ -1,0 +1,49 @@
+= Spring Cloud
+:toc: left
+:imagesdir: images
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+== Wrapping it up
+
+=== End of the road
+
+image::schematic-overview.png[]
+
+|===
+|Task|Comment
+
+|Created a central `config-server`
+|
+
+|Implemented `items-service` and `reviews-service`
+|
+
+|Added `service-discovery-server`
+|We now utilize an _Eureka_ server that keeps track of services for us. It knows which _host_ and _port_ each service use, information that other Spring Cloud applications can use when needed.
+
+|Enabled registering of existing `items-service` and `reviews-service` to registry
+|Our example microservices register to the discovery server during startup. During their life time they send heartbeats at regular intervals, letting the discovery server know they are healthy.
+
+|Created the `webapi` component which discover and calls the above services using the `service-discovery-server`.
+|The BFF WebApi component uses _Spring Cloud OpenFeign_ for calling and aggregating responses from the microservices. OpenFeign clients do not explicitly know where these services are located, instead they fetch this information from the discovery server.
+
+|Used Ribbon as Client load balancer
+|
+
+|Looked at Hystrix for fault tolerance and Resiliency
+|
+
+|Added `gateway` as main entrance
+|
+
+|Enabled tracing information to be able to track a request
+|
+|===
+
