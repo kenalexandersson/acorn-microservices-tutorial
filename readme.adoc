@@ -1,5 +1,4 @@
 = Spring Cloud
-:toc:
 :imagesdir: guide/images
 
 ifdef::env-github[]
