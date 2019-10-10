@@ -432,7 +432,7 @@ public class ResponseBodyFilter extends ZuulFilter {
 
 === Adding authentication
 
-A gateway component typically handles cross cutting concerns like authentication. The field comprising authentication methods are quite large, there are several authentication schemes and patterns that can be used, each one the more complex than the other. Typically you hear of https://connect2id.com/products/ldapauth/auth-explained[LDAP], https://en.wikipedia.org/wiki/SAML_2.0[SAML], https://oauth.net/2/[OAuth 2.0], https://openid.net/connect/[OpenID Connect] (and more), which all have this in common: They are usually complicated beyond belief to implement, afterwards leaving a stale taste in your mouth and additional grey hair in various places.
+A gateway component typically handles cross cutting concerns like authentication. The field comprising authentication methods are quite large, there are several authentication schemes and patterns that can be used, each one more complex than the other. Typically you hear of https://connect2id.com/products/ldapauth/auth-explained[LDAP], https://en.wikipedia.org/wiki/SAML_2.0[SAML], https://oauth.net/2/[OAuth 2.0], https://openid.net/connect/[OpenID Connect] (and more), which all have this in common: They are usually complicated beyond belief to implement, afterwards leaving a stale taste in your mouth and additional grey hair in various places.
 
 We will not implement such here. Instead we will go for a simple basic authentication solution, which should of course not be considered in production worthy systems.
 
@@ -469,7 +469,25 @@ localauth:
 Note that the encrypted password in clear text is _abc_.
 
 . Create package `gateway/src/main/java/com/acorn/tutorial/gateway/authentication/localauth`
+. Add class `LocalAuth.java` as a value object for holding user data
++
+[source,java]
+----
+import lombok.Value;
 
+import java.util.List;
+
+/**
+ * Represents the entry for a user in the local user directory.
+ */
+@Value
+public class LocalUser {
+    private String userId;
+    private String password;
+    private List<String> roles;
+}
+----
++
 . Add class `LocalAuthProperties` (this class loads the users.yml file so that we can handle the content programmatically).
 +
 [source,java]
@@ -544,65 +562,6 @@ public class LocalAuthProperties {
         <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 ----
-+
-. Create the security configuration, add file `gateway/src/main/java/com/acorn/tutorial/gateway/authentication/localauth/LocalAuthSecurityConfiguration.java`
-+
-[source,java]
-----
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-/**
- * Authenticates using a local user directory (from config files).
- */
-@Profile("localauth")
-@Configuration
-@EnableWebSecurity(debug = false)
-public class LocalAuthSecurityConfiguration extends WebSecurityConfigurerAdapter {
-
-    private final LocalAuthProvider authProvider;
-
-    @Autowired
-    public LocalAuthSecurityConfiguration(LocalAuthProvider authProvider) {
-        this.authProvider = authProvider;
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) {
-        // Instruct Spring Security to use our authentication provider
-        auth.authenticationProvider(authProvider);
-    }
-
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-
-        http
-                .authorizeRequests() // Instruct Spring Security to act on incoming requests
-                .antMatchers("/actuator/**").permitAll() // This excludes /actuator from the security check, i.e. we don't need to be authenticated here
-                .anyRequest().fullyAuthenticated() // instruct spring security that we must be authenticated to allow request
-                .and()
-                    .httpBasic(); // ... using http basic
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        // This is the encoder that can make sense of the decrypted password in users.yml
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
-}
-----
-+
-. Add our custom authentication provider, `gateway/src/main/java/com/acorn/tutorial/gateway/authentication/localauth/LocalAuthProvider.java`
 +
 [source,java]
 ----
@@ -688,6 +647,106 @@ public class LocalAuthProvider implements AuthenticationProvider {
         return roles.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
+    }
+}
+----
++
+. Create the security configuration, add file `gateway/src/main/java/com/acorn/tutorial/gateway/authentication/localauth/LocalAuthSecurityConfiguration.java`
++
+[source,java]
+----
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+/**
+ * Authenticates using a local user directory (from config files).
+ */
+@Profile("localauth")
+@Configuration
+@EnableWebSecurity(debug = false)
+public class LocalAuthSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    private final LocalAuthProvider authProvider;
+
+    @Autowired
+    public LocalAuthSecurityConfiguration(LocalAuthProvider authProvider) {
+        this.authProvider = authProvider;
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) {
+        // Instruct Spring Security to use our authentication provider
+        auth.authenticationProvider(authProvider);
+    }
+
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+
+        http
+                .authorizeRequests() // Instruct Spring Security to act on incoming requests
+                .antMatchers("/actuator/**").permitAll() // This excludes /actuator from the security check, i.e. we don't need to be authenticated here
+                .anyRequest().fullyAuthenticated() // instruct spring security that we must be authenticated to allow request
+                .and()
+                    .httpBasic(); // ... using http basic
+    }
+}
+----
++
+. Add our custom authentication provider, `gateway/src/main/java/com/acorn/tutorial/gateway/authentication/localauth/LocalAuthProvider.java`
++
+. and finally add `LocalAuthPasswordEncoderConfiguration.java` that knows how encode the passwords
++
+[source,java]
+----
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+/**
+ * Configures the password encoder for the local user authentication.
+ * <p>
+ * Generate the password with:
+ *
+ * <pre>
+ *   python -c 'import bcrypt; print(bcrypt.hashpw("password", bcrypt.gensalt(rounds=10)))' | sed 's/$2b/$2a/'
+ * </pre>
+ *
+ * or
+ *
+ * <pre>
+ *   htpasswd -bnBC 10 ""  password | tr -d ':\n' | sed 's/$2y/$2a/'
+ * </pre>
+ *
+ * ... and prefix it with "{bcrypt}". For example:
+ *
+ * <pre>
+ *     localauth:
+ *       users:
+ *         - userId: "admin"
+ *           password: "{bcrypt}$2a$10$LSFBr7wQG1/AIkEdTzXOjOhK5lINUk4nQYfGKCjGvpe6m3XXUVE7y"
+ *           roles:
+ *             - administrator
+ * </pre>
+ *
+ * The 'sed' operation is required due to a bug in Spring Security.
+ * <a href="https://github.com/spring-projects/spring-security/issues/3320">A fix seems to be scheduled for release 5.2.0.</a>
+ */
+@Profile("localauth")
+@Configuration
+public class LocalAuthPasswordEncoderConfiguration {
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 }
 ----
