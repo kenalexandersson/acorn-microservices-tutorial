@@ -430,13 +430,13 @@ public class ResponseBodyFilter extends ZuulFilter {
 }
 ----
 
-=== Adding authentication
+== Adding authentication
 
 A gateway component typically handles cross cutting concerns like authentication. The field comprising authentication methods are quite large, there are several authentication schemes and patterns that can be used, each one more complex than the other. Typically you hear of https://connect2id.com/products/ldapauth/auth-explained[LDAP], https://en.wikipedia.org/wiki/SAML_2.0[SAML], https://oauth.net/2/[OAuth 2.0], https://openid.net/connect/[OpenID Connect] (and more), which all have this in common: They are usually complicated beyond belief to implement, afterwards leaving a stale taste in your mouth and additional grey hair in various places.
 
 We will not implement such here. Instead we will go for a simple basic authentication solution, which should of course not be considered in production worthy systems.
 
-==== Spring Security
+=== Spring Security
 The goal of this section is to get a brief glimpse of the topic of security. Below we will setup an authentication solution using https://docs.spring.io/spring-security/site/docs/5.2.1.BUILD-SNAPSHOT/reference/htmlsingle/[Spring Security].
 
 Spring Security is a powerful and highly customizable authentication and access-control framework. It is the de-facto standard for securing Spring-based applications. The authentication process is basically a chain of pre-built filters and beans (code components) that operates on the incoming request. These filters can be overridden or customized as you see fit.
