@@ -135,7 +135,7 @@ In addition, we need to tell our applications how often we want to sample our lo
     ...
 ----
 +
-. Restart GatewayApplication`, `WebapiApplication`, `ItemsServiceApplication`, and `ReviewsServiceApplication`
+. Restart `GatewayApplication`, `WebapiApplication`, `ItemsServiceApplication`, and `ReviewsServiceApplication`
 +
 [TIP]
 ====
@@ -163,7 +163,7 @@ It pretty much looks as the logs we saw before. Note however that the export fla
 
 . Click on _Try Lens UI_ to get a more pleasant look and feel
 
-. Click Find Traces
+. Click the magnifying glass
 +
 Here you should see tracing information for the endpoints involved, with timing info on how long each operation took. Clicking a row will show you all the details collected from the Sleuth logs including timing information for the particular request.
 
