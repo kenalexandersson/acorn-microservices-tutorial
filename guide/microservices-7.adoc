@@ -21,7 +21,7 @@ We will create a gateway server based on https://cloud.spring.io/spring-cloud-ne
 ====
 Zuul Vs Spring Cloud Gateway
 
-Spring has put the project `spring-cloud-starter-netflix-zuul` in maintenance mode, which means that no new development takes place there (only critical bug fixes). Instead Spring provides a replacement in the form of Spring Cloud Gateway. There is a distinct difference between the technology behind the two projects, Spring Cloud Gateway is built on Spring Framework 5, Project Reactor. This means that it uses non-blocking techniques when handling requests.
+Spring has put the project `spring-cloud-starter-netflix-zuul` (that we user here) in maintenance mode, which means that no new development takes place there (only critical bug fixes). Instead Spring provides a replacement in the form of Spring Cloud Gateway. There is a distinct difference between the technology behind the two projects, Spring Cloud Gateway is built on Spring Framework 5, Project Reactor. This means that it uses non-blocking techniques when handling requests.
 
 Zuul (v1) is a blocking gateway while Spring Cloud Gateway is a non-blocking gateway. In case of non-blocking, the main thread is always available to serve the request and other multiple threads process those requests asynchronously in the background and once the request is completely processed the response is returned. Hence non-blocking model requires a less no of resources to serve the same amount of requests as compared to blocking gateway.
 
@@ -205,7 +205,32 @@ Take a look at the logs, the application should start fine.
 * Check Eureka, the `gateway` should be registered: http://localhost:8761
 * Access http://localhost:20202/webapi/items
 
-Well, hooray, you should now have accessed the `webapi` properly.
+[WARNING]
+====
+Oh no, it doesn't work! You get the message _There was an unexpected error (type=Not Found, status=404)_.
+
+Well that is because you forgot to enable the _Zuul proxy_ (schmuck) so no routing is going on. Open `gateway/src/main/java/com/acorn/tutorial/gateway/GatewayApplication.java` and add `@EnableZuulProxy`:
+
+[source,java]
+----
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
+
+@EnableZuulProxy
+@SpringBootApplication
+public class GatewayApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(GatewayApplication.class, args);
+	}
+}
+----
+====
+
+Restart `gateway` and try again.
+
+Hooray, you should now have been routed to the `webapi` properly.
 
 Now to the next part, find out what happens if you access one of the services behind `webapi` directly via the `gateway`:
 
@@ -236,7 +261,7 @@ As it is setup right now, you should actually get a response from `items-service
 ]
 ----
 
-In fact, this is true for all the other services as well (you can see them listed at http://localhost:20202/actuator/routes.). It is hence possible to also access
+In fact, this is true for all the other services as well (you can see them listed at http://localhost:20202/actuator/routes). It is hence possible to also access
 
 * http://localhost:20202/reviews-service/reviews
 
@@ -280,6 +305,13 @@ ____
 +
 [source,java]
 ----
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
+import java.util.Collections;
+import java.util.List;
+import org.springframework.stereotype.Component;
+import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
+
 @Component
 public class ForbiddenPathFilter extends ZuulFilter {
 
@@ -334,11 +366,332 @@ public class ForbiddenPathFilter extends ZuulFilter {
 +
 . Restart the application and check if you can see the filter in http://localhost:20202/actuator/filters
 
-. Access http://localhost:20202/items-service/items
+. Access http://localhost:20202/items-service/items again
 .. It should now return 404
 ____
 
+This was just one example of how to add a filter for modifying the routing behavior. Filters are generally used for the majority of proxy/gateway work, for example: dynamic routing, rate limiting (i.e. slowing eager client requests down a bit), DDoS protection, metrics, to name a few.
+
+Below is a filter of type "post", which logs the content of response bodies. Add it if you like, or move on to the next section.
+
+[source,java]
+----
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import com.google.common.io.CharStreams;
+import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
+
+/**
+* Filter that writes the response body to console log
+*/
+@Component
+public class ResponseBodyFilter extends ZuulFilter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResponseBodyFilter.class);
+
+    @Override
+    public String filterType() {
+        return POST_TYPE;
+    }
+
+    @Override
+    public int filterOrder() {
+        return 2;
+    }
+
+    @Override
+    public boolean shouldFilter() {
+        return true;
+    }
+
+    @Override
+    public Object run() {
+
+        RequestContext requestContext = RequestContext.getCurrentContext();
+        try (final InputStream responseDataStream = requestContext.getResponseDataStream()) {
+            final String responseData = CharStreams.toString(new InputStreamReader(responseDataStream, "UTF-8"));
+
+            String line = String.format("Response body: %s", responseData);
+            LOGGER.info(line);
+
+            requestContext.setResponseBody(responseData);
+        } catch (IOException e) {
+            LOGGER.error("Error reading response body", e);
+        }
+
+        return null;
+    }
+}
+----
+
 === Adding authentication
+
+A gateway component typically handles cross cutting concerns like authentication. The field comprising authentication methods are quite large, there are several authentication schemes and patterns that can be used, each one the more complex than the other. Typically you hear of https://connect2id.com/products/ldapauth/auth-explained[LDAP], https://en.wikipedia.org/wiki/SAML_2.0[SAML], https://oauth.net/2/[OAuth 2.0], https://openid.net/connect/[OpenID Connect] (and more), which all have this in common: They are usually complicated beyond belief to implement, afterwards leaving a stale taste in your mouth and additional grey hair in various places.
+
+We will not implement such here. Instead we will go for a simple basic authentication solution, which should of course not be considered in production worthy systems.
+
+==== Spring Security
+The goal of this section is to get a brief glimpse of the topic of security. Below we will setup an authentication solution using https://docs.spring.io/spring-security/site/docs/5.2.1.BUILD-SNAPSHOT/reference/htmlsingle/[Spring Security].
+
+Spring Security is a powerful and highly customizable authentication and access-control framework. It is the de-facto standard for securing Spring-based applications. The authentication process is basically a chain of pre-built filters and beans (code components) that operates on the incoming request. These filters can be overridden or customized as you see fit.
+
+What we want to do is:
+
+* Setup a set of trusted users and passwords (in a static file)
+* Enable Spring Security and configure it for handling basic auth.
+* Create an AuthenticationProvider that we add to the configuration
+
+[quote]
+____
+. Add a new file `gateway/src/main/resources/users.yml` with this content
++
+[source,yml]
+----
+localauth:
+    users:
+      - userId: "admin"
+        password: "{bcrypt}$2a$10$LSFBr7wQG1/AIkEdTzXOjOhK5lINUk4nQYfGKCjGvpe6m3XXUVE7y"
+        roles:
+          - administrator
+
+      - userId: "frank"
+        password: "{bcrypt}$2a$10$LSFBr7wQG1/AIkEdTzXOjOhK5lINUk4nQYfGKCjGvpe6m3XXUVE7y"
+        roles:
+          - employee
+----
++
+Note that the encrypted password in clear text is _abc_.
+
+. Create package `gateway/src/main/java/com/acorn/tutorial/gateway/authentication/localauth`
+
+. Add class `LocalAuthProperties` (this class loads the users.yml file so that we can handle the content programmatically).
++
+[source,java]
+----
+import lombok.Data;
+import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.core.io.support.EncodedResource;
+import org.springframework.core.io.support.PropertySourceFactory;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+
+/**
+ * Properties class for local authentication config attributes.
+ * <p>
+ * Local users are defined in a file "users.yml" located on classpath
+ */
+@Profile("localauth")
+@Component
+@PropertySource(value = "classpath:users.yml", ignoreResourceNotFound = true, factory = LocalAuthProperties.YamlPropertySourceFactory.class)
+@ConfigurationProperties(prefix = "localauth")
+@Data
+public class LocalAuthProperties {
+    /**
+     * The locally defined users.
+     */
+    private List<LocalUser> users;
+
+    static class YamlPropertySourceFactory implements PropertySourceFactory {
+
+        @Override
+        public org.springframework.core.env.PropertySource<?> createPropertySource(@Nullable String name, EncodedResource resource) throws IOException {
+            Properties propertiesFromYaml = loadYamlIntoProperties(resource);
+            String sourceName = name != null ? name : resource.getResource().getFilename();
+            return new PropertiesPropertySource(sourceName, propertiesFromYaml);
+        }
+
+        private Properties loadYamlIntoProperties(EncodedResource resource) throws FileNotFoundException {
+            try {
+                YamlPropertiesFactoryBean factory = new YamlPropertiesFactoryBean();
+                factory.setResources(resource.getResource());
+                factory.afterPropertiesSet();
+                return factory.getObject();
+
+            } catch (IllegalStateException e) {
+                // for ignoreResourceNotFound
+                Throwable cause = e.getCause();
+                if (cause instanceof FileNotFoundException) {
+                    throw (FileNotFoundException) e.getCause();
+                }
+
+                throw e;
+            }
+        }
+    }
+}
+----
++
+. Open `gateway/pom.xml` and dependency to Spring Security
++
+[source,xml]
+----
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+----
++
+. Create the security configuration, add file `gateway/src/main/java/com/acorn/tutorial/gateway/authentication/localauth/LocalAuthSecurityConfiguration.java`
++
+[source,java]
+----
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+/**
+ * Authenticates using a local user directory (from config files).
+ */
+@Profile("localauth")
+@Configuration
+@EnableWebSecurity(debug = false)
+public class LocalAuthSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    private final LocalAuthProvider authProvider;
+
+    @Autowired
+    public LocalAuthSecurityConfiguration(LocalAuthProvider authProvider) {
+        this.authProvider = authProvider;
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) {
+        // Instruct Spring Security to use our authentication provider
+        auth.authenticationProvider(authProvider);
+    }
+
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+
+        http
+                .authorizeRequests() // Instruct Spring Security to act on incoming requests
+                .antMatchers("/actuator/**").permitAll() // This excludes /actuator from the security check, i.e. we don't need to be authenticated here
+                .anyRequest().fullyAuthenticated() // instruct spring security that we must be authenticated to allow request
+                .and()
+                    .httpBasic(); // ... using http basic
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // This is the encoder that can make sense of the decrypted password in users.yml
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+}
+----
++
+. Add our custom authentication provider, `gateway/src/main/java/com/acorn/tutorial/gateway/authentication/localauth/LocalAuthProvider.java`
++
+[source,java]
+----
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Component
+@Profile("localauth")
+public class LocalAuthProvider implements AuthenticationProvider {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalAuthProvider.class);
+    private static final Object CREDENTIALS_FOR_AUTHENTICATED_TOKEN = "[dummy credentials]";
+
+    private final LocalAuthProperties properties;
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public LocalAuthProvider(LocalAuthProperties properties, PasswordEncoder passwordEncoder) {
+        this.properties = properties;
+        this.passwordEncoder = passwordEncoder;
+
+        if (properties.getUsers() == null) {
+            LOGGER.warn("No local users defined. Are we missing a 'users.yml' file?");
+        } else {
+            LOGGER.info("Setting up a local users directory with users found in users.yml:");
+            properties.getUsers()
+                    .forEach(localUser -> LOGGER.info("-> UserId: {}, roles: {}", localUser.getUserId(), localUser.getRoles()));
+        }
+    }
+
+    @Override
+    public Authentication authenticate(Authentication authentication) {
+        final String name = authentication.getName();
+        final String rawPassword = authentication.getCredentials().toString();
+
+        final Optional<LocalUser> localUser = getLocalUser(name, rawPassword);
+
+        return localUser
+                .map(LocalAuthProvider::createPreAuthenticatedAuthenticationToken)
+                .orElseThrow(() -> new BadCredentialsException("Incorrect user name or password"));
+    }
+
+    private Optional<LocalUser> getLocalUser(String name, String rawPassword) {
+        List<LocalUser> users = properties.getUsers();
+        if (users == null) {
+            return Optional.empty();
+        }
+
+        return users.stream()
+                .filter(user -> name.equals(user.getUserId()) && passwordEncoder.matches(rawPassword, user.getPassword()))
+                .findFirst();
+    }
+
+
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return UsernamePasswordAuthenticationToken.class.equals(authentication);
+    }
+
+    private static PreAuthenticatedAuthenticationToken createPreAuthenticatedAuthenticationToken(LocalUser localUser) {
+        final PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(localUser.getUserId(), CREDENTIALS_FOR_AUTHENTICATED_TOKEN, createGrantedAuthorities(localUser.getRoles()));
+        token.setDetails(localUser);
+        return token;
+    }
+
+    private static Collection<? extends GrantedAuthority> createGrantedAuthorities(List<String> roles) {
+        return roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+    }
+}
+----
+____
 
 curl -X GET http://localhost:20202/webapi/items --user frank:abc
 

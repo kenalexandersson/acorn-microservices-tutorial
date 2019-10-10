@@ -25,7 +25,7 @@ The `webapi` component will provide a set of REST resources for retrieving _item
 
 [TIP]
 ====
-What does a BFF typically do?
+What does a BFF typically do apart from aggregating stuff for it's best friend client?
 Can handle api-keys and authentication if desired.
 ====
 
@@ -131,7 +131,7 @@ cd config-server
 mvn clean install -DskipTests
 ----
 +
-. Restart `webapi`
+. Restart `config-server`
 . Verify that all looks good by accessing http://localhost:7777/webapi/default
 ____
 
@@ -173,6 +173,10 @@ ____
 +
 [source,java]
 ----
+import java.util.List;
+import lombok.ToString;
+import lombok.Value;
+
 @ToString
 @Value(staticConstructor = "of")
 public class ItemInfoDto {
@@ -190,6 +194,10 @@ The lombok annotation `@Value(staticConstructor = "of")` will create a private c
 +
 [source,java]
 ----
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.ToString;
+
 @Data
 @ToString
 @AllArgsConstructor
@@ -206,6 +214,10 @@ public class Item {
 +
 [source,java]
 ----
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.ToString;
+
 @Data
 @AllArgsConstructor
 @ToString
@@ -238,8 +250,13 @@ ____
 +
 [source,java]
 ----
+import java.util.Collections;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class WebApiController {
@@ -300,6 +317,10 @@ ____
 +
 [source,java]
 ----
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+
 @EnableFeignClients("com.acorn.tutorial.webapi")
 @SpringBootApplication
 public class WebapiApplication {
@@ -316,10 +337,15 @@ The next logical step would be to create the actual clients for `items-service` 
 
 [quote]
 ____
-. Create the file `webapi/src/main/java/com/acorn/tutorial/webapi/ItemsClient.java`
+. Create the file `webapi/src/main/java/com/acorn/tutorial/webapi/web/ItemsClient.java`
 +
 [source,java]
 ----
+import java.util.List;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 @FeignClient(name = "items-service")
 public interface ItemsClient {
 
@@ -331,10 +357,15 @@ public interface ItemsClient {
 }
 ----
 +
-. Create the file `webapi/src/main/java/com/acorn/tutorial/webapi/ReviewsClient.java`
+. Create the file `webapi/src/main/java/com/acorn/tutorial/webapi/web/ReviewsClient.java`
 +
 [source,java]
 ----
+import java.util.List;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 @FeignClient(name = "reviews-service")
 public interface ReviewsClient {
 
@@ -383,6 +414,11 @@ ____
 +
 [source,java]
 ----
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+
 @EnableDiscoveryClient
 @EnableFeignClients("com.acorn.tutorial.webapi")
 @SpringBootApplication
@@ -483,8 +519,14 @@ The complete `WebApiController` class should now look like this.
 
 [source,java]
 ----
+import java.util.List;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class WebApiController {

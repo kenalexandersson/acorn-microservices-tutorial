@@ -13,8 +13,8 @@ endif::[]
 == Reviews Service
 People on the internet are keen on having opinions about everything and they love reviewing things. So as a companion to the `items-service`, there is a need for a `reviews-service` where people can rate items, and perhaps other stuff as well.
 
-.The reviews service
 image::overview-3-reviews-service.png[]
+_The reviews service_
 
 The requirements list is kept small in this tutorial, we don't care about providing means for adding or updating reviews (via POST or PUT), the REST-API should only provide resources for getting reviews.
 
@@ -178,6 +178,12 @@ ____
 +
 [source,java]
 ----
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @Data
 @NoArgsConstructor
 @Entity
@@ -213,6 +219,12 @@ ____
 +
 [source,java]
 ----
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import com.acorn.tutorial.reviewsservice.model.Review;
+
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
@@ -258,6 +270,19 @@ ____
 +
 [source,java]
 ----
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import com.acorn.tutorial.reviewsservice.model.Review;
+import com.acorn.tutorial.reviewsservice.repository.ReviewRepository;
+
 @RestController
 public class ReviewsServiceController {
 
@@ -274,11 +299,6 @@ public class ReviewsServiceController {
         return reviewRepository.findAll().stream()
                 .map(this::toReviewDto)
                 .collect(Collectors.toList());
-    }
-
-    @PostMapping(path = "/reviews")
-    public ReviewDto addReview(@RequestBody Review newReview) {
-        return toReviewDto(reviewRepository.save(newReview));
     }
 
     @GetMapping(path = "/reviews/{type}", produces = "application/json")
@@ -299,11 +319,6 @@ public class ReviewsServiceController {
         return reviews.stream()
                 .map(this::toReviewDto)
                 .collect(Collectors.toList());
-    }
-
-    @DeleteMapping("/reviews/{id}")
-    public void deleteReview(@PathVariable Long id) {
-        reviewRepository.deleteById(id);
     }
 
     private ReviewDto toReviewDto(Review review) {
@@ -328,9 +343,8 @@ ____
 +
 [source,java]
 ----
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.env.Environment;
+import com.acorn.tutorial.reviewsservice.model.Review;
+import lombok.Data;
 
 @Data
 public class ReviewDto {

@@ -21,7 +21,7 @@ image::schematic-overview.png[]
 
 We are going to build a set of Java https://spring.io/projects/spring-boot[Spring Boot] components using https://spring.io/projects/spring-cloud[Spring Cloud] tools. Some of these components will implement common microservices patterns used in distributed systems, these are hence of a more supportive nature.
 
-Config Server:: The Config server's responsibility is to be the central for configuration of all other components.
+Config Server:: The Config server's responsibility is to be the configuration central for all other components.
 
 Gateway:: The Gateway is the single point entrance to the outside world. Clients from the outside must go through the Gateway to access the inner services. A key role of the Gateway is to route incoming requests to the right service.
 
@@ -287,8 +287,23 @@ ____
 . Create a new package under `items-service/src/main/java/com/acorn/tutorial/itemsservice`, name it `model`
 . Add a file named `Items.java` with the below content:
 +
+[TIP]
+====
+If you are using Intellij, there is a quick way to add a new class. Just copy the below code snippet, then highlight the `model` package and do `Ctrl-V`
+
+image::intellij-add-copy.png[]
+====
++
 [source,java]
 ----
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @Data
 @NoArgsConstructor
 @Entity
@@ -333,6 +348,10 @@ ____
 +
 [source,java]
 ----
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import com.acorn.tutorial.itemsservice.model.Item;
+
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
@@ -351,7 +370,7 @@ Once logged in you should be able to see a listing of database tables.
 [TIP]
 This is not a tutorial in using Spring Data JPA so we will leave it without deeper explanation, but for those interested in details, please see https://dzone.com/articles/spring-data-jpa-1 or visit the official reference at https://docs.spring.io/spring-data/jpa/docs/current/reference/html/
 
-There is one final automagic thing to do before we leave the persistence topic for this time. It would be nice if we could have some dummy data loaded into the system. This can be achieved by simply adding a file named `src/main/resources/data.sql` containing a couple of INSERT statements:
+There is one final automagic thing to do before we leave the persistence topic for this time. It would be nice if we could have some dummy data loaded into the system at startup. This can be achieved by simply adding a file named `src/main/resources/data.sql` containing a couple of INSERT statements:
 
 [quote]
 ____
@@ -385,6 +404,16 @@ ____
 +
 [source,java]
 ----
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import com.acorn.tutorial.itemsservice.model.Item;
+import com.acorn.tutorial.itemsservice.repository.ItemRepository;
+
 @RestController
 public class ItemsServiceController {
 
@@ -439,6 +468,10 @@ ____
 +
 [source,java]
 ----
+import com.acorn.tutorial.itemsservice.model.Item;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 @Data
 @AllArgsConstructor
 public class ItemDto {
@@ -477,6 +510,12 @@ ____
 +
 [source,java]
 ----
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 @ControllerAdvice
 public class ItemNotFoundAdvice {
 
