@@ -14,7 +14,7 @@ endif::[]
 
 === End of the road
 
-image::schematic-overview.png[]
+image::overview-7-gateway.png[]
 
 |===
 |Task|Comment
@@ -41,6 +41,9 @@ image::schematic-overview.png[]
 |
 
 |Added `gateway` as main entrance
+|
+
+|Dabbled a bit with _Spring Security_ in the `gateway`
 |
 
 |Enabled tracing information to be able to track a request
