@@ -134,8 +134,15 @@ In addition, we need to tell our applications how often we want to sample our lo
 
     ...
 ----
++
+. Restart `GatewayApplication`, `WebapiApplication`, `ItemsServiceApplication`, and `ReviewsServiceApplication`
++
+[TIP]
+====
+If using IntelliJ, you can mark all desired components and restart them in one go:
 
-. Restart GatewayApplication`, `WebapiApplication`, `ItemsServiceApplication`, and `ReviewsServiceApplication`
+image::restart-many.png[]
+====
 
 . Access http://localhost:20202/webapi/items
 
@@ -156,7 +163,7 @@ It pretty much looks as the logs we saw before. Note however that the export fla
 
 . Click on _Try Lens UI_ to get a more pleasant look and feel
 
-. Click Find Traces
+. Click the magnifying glass
 +
 Here you should see tracing information for the endpoints involved, with timing info on how long each operation took. Clicking a row will show you all the details collected from the Sleuth logs including timing information for the particular request.
 
@@ -167,5 +174,5 @@ ____
 
 This marks the end of the tracing example. Good work! In fact, it is almost the end of the whole session. The last thing for us to do before we leave is to quickly summarize what we have been doing.
 
-<<microservices-8.adoc#,Nextup: Wrapping up>>
+<<microservices-9.adoc#,Nextup: Wrapping up>>
 

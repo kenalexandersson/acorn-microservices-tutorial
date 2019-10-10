@@ -42,6 +42,12 @@ ____
 +
 [source,java]
 ----
+import java.util.List;
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 @FeignClient(name = "items-service")
 @RibbonClient(name = "items-service")
 public interface ItemsClient {
@@ -56,7 +62,8 @@ public interface ItemsClient {
 +
 This is all it takes to make Ribbon cooperate with Eureka. If we start another instance of `items-service`, we should be able to see the load balancing in action.
 +
-. Start another `items-service` instance using one of these two approaches:
+. Restart current `items-service`, if running, otherwise start it
+. Start yet another `items-service` instance using one of these two approaches:
 .. If you are using IntelliJ, duplicate the _ItemsServiceApplication_ run configuration. Override parameter _server.port_, set it to 8085
 +
 image::runconfig-instance2.png[]
@@ -65,16 +72,17 @@ image::runconfig-instance2.png[]
 +
 [source,bash]
 ----
-# Go to the webapi root
-cd webapi
+# Go to the items-service root
+cd items-service
 
 # Build the project
 mvn clean install -DskipTests
 
 # Start the instance using port 8085
-java -jar target/webapi-1.0-SNAPSHOT.jar --server.port=8085
+java -jar target/items-service-0.0.1-SNAPSHOT.jar --server.port=8085
 ----
 +
+. Look at Eureka, http://localhost:8761/, to see if it has registered two instances of `items-service`
 . Access http://localhost:8100/webapi/items
 +
 Check the value of _item.port_ in JSON output
@@ -91,7 +99,7 @@ Repeat the process for `reviews-service`, if you are in the mood for it. It is a
 == Fault tolerance and Resiliency
 Since the `webapi` calls `items-service` and `reviews-service`, it is of course dependent upon these services being up and running. But what happens when one or both of the services goes down, or their response time slows down, how should the `webapi` behave in such situation?
 
-This is the topic of fault tolerance and resilient systems. The main idea is to stop cascading failures between services by failing fast and recover as soon as possible. A problem with distributed applications is that they communicate over network – which is unreliable. Hence you need to design your microservices in such a way that they are _fault tolerant_ and handle failures gracefully. In your microservice architecture, there might be several services talking with each other. You need to ensure that one failed service does not bring down the entire architecture.
+This is the topic of fault tolerance and resilient systems. The main idea is to stop cascading failures between services by failing fast and recover as soon as possible. A problem with distributed applications is that they communicate over network – which is unreliable. Hence you need to design your microservices in such a way that they are _fault tolerant_ and handle failures gracefully. In your microservice architecture, there might be several services talking to each other. You need to ensure that one failed service does not bring down the entire architecture.
 
 The ambition in this tutorial is not to drill down into this area overly much, but let us look at some quick ways to add fault tolerance into the Feign clients we have created.
 
@@ -112,7 +120,7 @@ ____
 . Make sure all other services are running
 . Access http://localhost:8100/webapi/items/1
 +
-Initially you should see an error saying
+Initially in the server logs you should see an error saying
 +
 ----
 There was an unexpected error (type=Internal Server Error, status=500).
@@ -123,12 +131,12 @@ If you retry again after roughly 30 seconds a new message should be seen
 +
 ----
 com.netflix.client.ClientException:
-Load balancer does not have available server for client: items-service should be seen.
+Load balancer does not have available server for client: items-service.
 ----
 +
 The reason for the different messages is because initially the feign client fails to connect, which gives _Connection refused_. After 30 seconds or so, the service discovery server detects that `items-service` has not sent any heartbeats and removes it from the list of known services. When we access the resource again, we get _Load balancer does not have available server for client: items-service_.
 
-. Enable Hystrix by changing it's property in `bootstrap.yml`:
+. Enable Hystrix by changing it's property in `webapi/src/main/resources/bootstrap.yml`:
 +
 [source,yml]
 ----
@@ -156,6 +164,15 @@ The last part about _no fallback available_ is interesting. A Feign client can u
 +
 [source,java]
 ----
+import java.util.Collections;
+import java.util.List;
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import feign.hystrix.FallbackFactory;
+
 @FeignClient(name = "items-service", fallbackFactory = ItemsClient.ItemsServiceFallbackFactory.class)
 @RibbonClient(name = "items-service")
 public interface ItemsClient {
@@ -191,6 +208,15 @@ public interface ItemsClient {
 +
 [source,java]
 ----
+import java.util.Collections;
+import java.util.List;
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import feign.hystrix.FallbackFactory;
+
+@RibbonClient(name = "reviews-service")
 @FeignClient(name = "reviews-service", fallbackFactory = ReviewsClient.ReviewsServiceFallbackFactory.class)
 public interface ReviewsClient {
 
@@ -200,6 +226,7 @@ public interface ReviewsClient {
     @GetMapping("/reviews/{type}/{typeid}")
     List<Review> getReviews(@PathVariable String type, @PathVariable Long typeid);
 
+    @Component
     class ReviewsServiceFallbackFactory implements FallbackFactory<ReviewsClient> {
 
         @Override
@@ -226,6 +253,11 @@ The resource should now return 200 OK again and a JSON response. Note the empty 
 +
 . Turn on one `items-service` instance again
 . Refresh http://localhost:8100/webapi/items/1 repeatedly, after approximately 30 seconds the instance will be detected again and the items part will be back to normal.
++
+[NOTE]
+====
+It can take 30 - 60 seconds before the `items-service` kicks in, so keep reloading and have patience.
+====
 ____
 
 This was of a quick and a bit simplified example of how to use Hystrix. There is a lot more configuration available to steer the behaviour and policies of Hystrix, like how to set things up for retrying failed requests and then backoff if it still does not work, or for introducing fallbacks to cached data if the database response latency goes bad.
