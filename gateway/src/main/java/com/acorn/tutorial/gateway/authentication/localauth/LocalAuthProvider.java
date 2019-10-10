@@ -1,5 +1,10 @@
 package com.acorn.tutorial.gateway.authentication.localauth;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,21 +19,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 @Component
 @Profile("localauth")
 public class LocalAuthProvider implements AuthenticationProvider {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalAuthProvider.class);
     private static final Object CREDENTIALS_FOR_AUTHENTICATED_TOKEN = "[dummy credentials]";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalAuthProvider.class);
-
     private final LocalAuthProperties properties;
-
     private final PasswordEncoder passwordEncoder;
 
     @Autowired

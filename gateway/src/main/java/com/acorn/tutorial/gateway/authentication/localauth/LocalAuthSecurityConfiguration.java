@@ -25,6 +25,7 @@ public class LocalAuthSecurityConfiguration extends WebSecurityConfigurerAdapter
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
+        // Instruct Spring Security to use our authentication provider
         auth.authenticationProvider(authProvider);
     }
 
@@ -34,10 +35,10 @@ public class LocalAuthSecurityConfiguration extends WebSecurityConfigurerAdapter
         http.csrf().disable();
 
         http
-                .authorizeRequests()
-                .antMatchers("/actuator/**").permitAll()
-                .anyRequest().fullyAuthenticated()
+                .authorizeRequests() // Instruct Spring Security to act on incoming requests
+                .antMatchers("/actuator/**").permitAll() // This excludes /actuator from the security check, i.e. we don't need to be authenticated here
+                .anyRequest().fullyAuthenticated() // instruct spring security that we must be authenticated to allow request
                 .and()
-                    .httpBasic();
+                .httpBasic(); // ... using http basic
     }
 }
