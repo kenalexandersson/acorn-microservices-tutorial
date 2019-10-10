@@ -563,6 +563,8 @@ public class LocalAuthProperties {
     </dependency>
 ----
 +
+. Add our custom authentication provider, `gateway/src/main/java/com/acorn/tutorial/gateway/authentication/localauth/LocalAuthProvider.java`
++
 [source,java]
 ----
 import org.slf4j.Logger;
@@ -699,8 +701,6 @@ public class LocalAuthSecurityConfiguration extends WebSecurityConfigurerAdapter
     }
 }
 ----
-+
-. Add our custom authentication provider, `gateway/src/main/java/com/acorn/tutorial/gateway/authentication/localauth/LocalAuthProvider.java`
 +
 . and finally add `LocalAuthPasswordEncoderConfiguration.java` that knows how encode the passwords
 +
