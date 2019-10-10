@@ -8,21 +8,5 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <modules>
-        <module>config-server</module>
-        <module>service-discovery-server</module>
-        <module>items-service</module>
-        <module>reviews-service</module>
-        <module>webapi</module>
-        <module>gateway</module>
-    </modules>
-
-    <repositories>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-        </repository>
-    </repositories>
 
 </project>
