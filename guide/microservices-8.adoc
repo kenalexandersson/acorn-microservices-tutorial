@@ -134,8 +134,15 @@ In addition, we need to tell our applications how often we want to sample our lo
 
     ...
 ----
-
++
 . Restart GatewayApplication`, `WebapiApplication`, `ItemsServiceApplication`, and `ReviewsServiceApplication`
++
+[TIP]
+====
+If using IntelliJ, you can mark all desired components and restart them in one go:
+
+image::restart-many.png[]
+====
 
 . Access http://localhost:20202/webapi/items
 
