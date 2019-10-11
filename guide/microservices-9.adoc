@@ -35,7 +35,7 @@ Let us do a brief recapitulation before we close the session. This is what we di
 |We now utilize an _Eureka_ server that keeps track of services for us. It knows which _host_ and _port_ each service use, information that other Spring Cloud applications can use when needed.
 
 |Enabled registering of existing `items-service` and `reviews-service` to registry
-|Our example microservices register to the discovery server during startup. During their life time they send heartbeats at regular intervals, letting the discovery server know they are healthy.
+|Our example microservices register to the discovery server during startup. During their life time they send heartbeats at regular intervals, letting the discovery server know they are healthy. If they are not, they are thrown away without ceremony.
 
 |Created the `webapi` component which discover and calls the above services using the `service-discovery-server`.
 |The BFF WebApi component uses _Spring Cloud OpenFeign_ for calling and aggregating responses from the microservices. OpenFeign clients do not explicitly know where these services are located, instead they fetch this information from the discovery server.
@@ -50,7 +50,7 @@ Let us do a brief recapitulation before we close the session. This is what we di
 |We added a gateway component that acted as a proxy. A filter made sure that clients could not be routed to other services than we allowed. It is common to let the gateway also handle authentication, which we tried by using _basic auth_.
 
 |Enabled tracing information to be able to track a request
-|Finally we added tracing capabilities so we could keep track of the path a request to the system took. This can be used with tools like _Zipkin_ to gain performance statistics. An area we did not cover was log aggregation, which is another typical topic when it comes to tracing.
+|Finally we added tracing capabilities so we could keep track of the path a request to the system took. This can be used with tools like _Zipkin_.
 |===
 
 Just a final recommendation before you leave:
