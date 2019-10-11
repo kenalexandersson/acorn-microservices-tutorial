@@ -135,7 +135,7 @@ mvn clean install -DskipTests
 . Verify that all looks good by accessing http://localhost:7777/webapi/default
 ____
 
-Next create the `bootstrap.yml` and add config for binding to `config-server`
+Next create the `webapi/src/main/resources/bootstrap.yml` and add config for binding to `config-server`
 [quote]
 ____
 . Delete `webapi/src/main/resources/application.properties`
