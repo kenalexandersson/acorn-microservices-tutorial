@@ -285,7 +285,7 @@ Let's start with the model class that defines the  attributes of an item.
 [quote]
 ____
 . Create a new package under `items-service/src/main/java/com/acorn/tutorial/itemsservice`, name it `model`
-. Add a file named `Items.java` with the below content:
+. Add a file named `Item.java` with the below content:
 +
 [TIP]
 ====
