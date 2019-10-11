@@ -35,13 +35,13 @@ image::overview-7-gateway.png[]
 |The BFF WebApi component uses _Spring Cloud OpenFeign_ for calling and aggregating responses from the microservices. OpenFeign clients do not explicitly know where these services are located, instead they fetch this information from the discovery server.
 
 |Used Ribbon as Client load balancer
-|
+|Ribbon helped us distributing the load evenly when we ran several instances of `items-service` and `reviews-service`. Ribbon keeps track of services and their host/ports by communicating closely with the `service-discovery-server`.
 
 |Looked at Hystrix for fault tolerance and Resiliency
-|
+|When services fail we must take care to not bring the whole application down. Hystrix provides _short circuit_ functionality to avoid clients bombarding services that are not feeling so well. We tried the _fallback_ approach, in our case we returned an empty value if the underlying service was down.
 
 |Added `gateway` as main entrance
-|
+|We added a gateway component that acted as a proxy. A filter made sure that clients could not be routed to other services than we allowed. It is common to let the gateway also handle authentication, which we tried by using _basic auth_.
 
 |Dabbled a bit with _Spring Security_ in the `gateway`
 |
@@ -50,4 +50,5 @@ image::overview-7-gateway.png[]
 |
 |===
 
-http://lucasmatt.com/2017/08/22/spring-microservices/
+Just a final recommendation before you leave:
+http://lucasmatt.com/2017/08/22/spring-microservices/[Spring Cloud in 10 Bad Cartoons]

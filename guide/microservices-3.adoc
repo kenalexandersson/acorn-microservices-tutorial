@@ -141,7 +141,7 @@ mvn clean install -DskipTests
 . Verify that all looks good by accessing http://localhost:7777/reviews-service/default
 ____
 
-Next create the `bootstrap.yml` and add config for binding to `config-server`
+Next create the reviews-service's `bootstrap.yml` and add config for binding to the central `config-server`
 [quote]
 ____
 . Delete `reviews-service/src/main/resources/application.properties`
