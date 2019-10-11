@@ -32,7 +32,7 @@ ____
 . Add dependencies (search for them and select):
 .. Spring Data JPA
 .. Spring Web
-.. Spring Config Client
+.. Config Client
 .. Lombok
 .. Spring Boot Actuator
 .. H2 Database

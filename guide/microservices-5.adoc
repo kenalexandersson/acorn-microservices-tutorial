@@ -38,7 +38,7 @@ ____
 .. `Group:` com.acorn.tutorial
 .. `Artifact:` webapi
 . Add dependencies (search for them and select):
-.. Spring Config Client
+.. Config Client
 .. Spring Web
 .. Spring Boot Actuator
 .. Lombok

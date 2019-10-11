@@ -45,7 +45,7 @@ ____
 .. `Group:` com.acorn.tutorial
 .. `Artifact:` gateway
 . Add dependencies (search for them and select):
-.. Spring Config Client
+.. Config Client
 .. Eureka Discovery Client
 .. Zuul
 .. Spring Web

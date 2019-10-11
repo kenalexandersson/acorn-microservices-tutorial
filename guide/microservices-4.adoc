@@ -84,7 +84,7 @@ ____
 .. `Artifact:` service-discovery-server
 . Add dependencies (search for them and select):
 .. Eureka Server
-.. Spring Config Client
+.. Config Client
 .. Spring Boot Actuator
 . Click `Generate the project`
 . If using https://start.spring.io: open the resulting zip and copy the items-service directory to the root of the project (acorn-microservices-tutorial)
