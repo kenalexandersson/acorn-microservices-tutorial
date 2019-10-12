@@ -10,16 +10,6 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-Welcome to the microservices tutorial at Acorn.
+Here you find the solution code for the https://github.com/kenalexandersson/acorn-microservices-tutorial[Spring-Cloud microservices tutorial].
 
-== Prerequisites
-[NOTE]
-Things you should do before the session: <<guide/prerequisites.adoc#,Prerequisites>>
-
-== Tutorial
-Here is the entry point to the tutorial we will do in the session
-
-[IMPORTANT]
-Do not start doing the tutorial in advance! Wait until you are physically seated in the classroom!
-
-<<guide/microservices-1.adoc#,Tutorial: Microservices>>
+The code here is the result of following the steps in the https://github.com/kenalexandersson/acorn-microservices-tutorial/blob/master/guide/microservices-1.adoc[guide].
