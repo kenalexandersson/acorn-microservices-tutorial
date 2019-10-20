@@ -39,7 +39,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
 
-  review:
+  reviews-service:
     build: reviews-service
     mem_limit: 350m
     depends_on:
