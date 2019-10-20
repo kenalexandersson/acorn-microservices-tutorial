@@ -3,5 +3,5 @@ spring:
     name: service-discovery-server
   cloud:
     config:
-      uri: http://localhost:7777
+      uri: http://config-server:7777
       fail-fast: true

@@ -13,5 +13,5 @@ public class Item {
 
     private String name;
 
-    private Integer port;
+    private String serviceAddress;
 }

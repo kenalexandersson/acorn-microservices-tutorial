@@ -9,6 +9,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>util</module>
         <module>config-server</module>
         <module>service-discovery-server</module>
         <module>items-service</module>

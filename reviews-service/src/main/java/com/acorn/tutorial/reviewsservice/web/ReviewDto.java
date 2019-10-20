@@ -20,13 +20,13 @@ public class ReviewDto {
 
     private String comment;
 
-    private int port;
+    private String serviceAddress;
 
-    public static ReviewDto of(Review review, int port) {
-        return new ReviewDto(review, port);
+    public static ReviewDto of(Review review, String serviceAddress) {
+        return new ReviewDto(review, serviceAddress);
     }
 
-    private ReviewDto(Review review, int port) {
+    private ReviewDto(Review review, String serviceAddress) {
         this.id = review.getId();
         this.type = review.getType();
         this.typeId = review.getTypeId();
@@ -34,6 +34,6 @@ public class ReviewDto {
         this.ratingMin = review.getRatingMin();
         this.ratingMax = review.getRatingMax();
         this.comment = review.getComment();
-        this.port = port;
+        this.serviceAddress = serviceAddress;
     }
 }

@@ -2,10 +2,10 @@ package com.acorn.tutorial.reviewsservice.web;
 
 import com.acorn.tutorial.reviewsservice.model.Review;
 import com.acorn.tutorial.reviewsservice.repository.ReviewRepository;
+import com.acorn.tutorial.util.ServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -19,12 +19,12 @@ public class ReviewsServiceController {
 
     private final ReviewRepository reviewRepository;
 
-    private final Environment environment;
+    private ServiceUtil serviceUtil;
 
     @Autowired
-    public ReviewsServiceController(ReviewRepository reviewRepository, Environment environment) {
+    public ReviewsServiceController(ReviewRepository reviewRepository, ServiceUtil serviceUtil) {
         this.reviewRepository = reviewRepository;
-        this.environment = environment;
+        this.serviceUtil = serviceUtil;
     }
 
     @GetMapping(path = "/reviews", produces = "application/json")
@@ -65,8 +65,7 @@ public class ReviewsServiceController {
     }
 
     private ReviewDto toReviewDto(Review review) {
-        int port = Integer.parseInt(environment.getProperty("local.server.port", "0"));
-        final ReviewDto reviewDto = ReviewDto.of(review, port);
+        final ReviewDto reviewDto = ReviewDto.of(review, serviceUtil.getServiceAddress());
         LOGGER.info(String.format("Returning %s", reviewDto));
         return reviewDto;
     }

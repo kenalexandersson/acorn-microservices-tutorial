@@ -1,17 +1,17 @@
 package com.acorn.tutorial.itemsservice.web;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.acorn.tutorial.itemsservice.model.Item;
+import com.acorn.tutorial.itemsservice.repository.ItemRepository;
+import com.acorn.tutorial.util.ServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import com.acorn.tutorial.itemsservice.model.Item;
-import com.acorn.tutorial.itemsservice.repository.ItemRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class ItemsServiceController {
@@ -20,12 +20,12 @@ public class ItemsServiceController {
 
     private ItemRepository itemRepository;
 
-    private Environment environment;
+    private ServiceUtil serviceUtil;
 
     @Autowired
-    public ItemsServiceController(ItemRepository itemRepository, Environment environment) {
+    public ItemsServiceController(ItemRepository itemRepository, ServiceUtil serviceUtil) {
         this.itemRepository = itemRepository;
-        this.environment = environment;
+        this.serviceUtil = serviceUtil;
     }
 
     @GetMapping(path = "/items", produces = "application/json")
@@ -45,8 +45,7 @@ public class ItemsServiceController {
     }
 
     private ItemDto toItemDto(Item item) {
-        int port = Integer.parseInt(environment.getProperty("local.server.port", "0"));
-        final ItemDto itemDto = ItemDto.of(item, port);
+        final ItemDto itemDto = ItemDto.of(item, serviceUtil.getServiceAddress());
         LOGGER.info(String.format("Returning %s", itemDto));
         return itemDto;
     }

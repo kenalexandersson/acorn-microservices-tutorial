@@ -10,5 +10,12 @@ feign:
   hystrix:
     enabled: true
 
-server:
-  port: 8100
+---
+spring:
+  profiles:
+    active: docker
+
+  cloud:
+    config:
+      uri: http://config-server:7777
+      fail-fast: true

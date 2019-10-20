@@ -1,0 +1,75 @@
+version: '2.1'
+
+services:
+  config-server:
+    build: config-server
+    mem_limit: 350m
+    ports:
+      - "7777:7777"
+    environment:
+      - SPRING_PROFILES_ACTIVE=native
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://config-server:7777/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  service-discovery-server:
+    build: service-discovery-server
+    mem_limit: 350m
+    depends_on:
+      config-server:
+        condition: service_healthy
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://service-discovery-server:8761/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  items-service:
+    build: items-service
+    mem_limit: 350m
+    depends_on:
+      config-server:
+        condition: service_healthy
+      service-discovery-server:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  review:
+    build: reviews-service
+    mem_limit: 350m
+    depends_on:
+      config-server:
+        condition: service_healthy
+      service-discovery-server:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  webapi:
+    build: webapi
+    mem_limit: 350m
+    depends_on:
+      config-server:
+        condition: service_healthy
+      service-discovery-server:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  gateway:
+    build: gateway
+    mem_limit: 350m
+    depends_on:
+      config-server:
+        condition: service_healthy
+      service-discovery-server:
+        condition: service_healthy
+    ports:
+      - "20202:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,localauth

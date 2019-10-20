@@ -10,9 +10,9 @@ public class ItemDto {
 
     private Long id;
     private String name;
-    private int port;
+    private String serviceAddress;
 
-    public static ItemDto of(Item item, int port) {
+    public static ItemDto of(Item item, String port) {
         return new ItemDto(item.getId(), item.getName(), port);
     }
 }

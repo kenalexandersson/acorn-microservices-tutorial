@@ -5,3 +5,13 @@ spring:
     config:
       uri: http://localhost:7777
       fail-fast: true
+
+---
+spring:
+  profiles:
+    active: docker
+
+  cloud:
+    config:
+      uri: http://config-server:7777
+      fail-fast: true
