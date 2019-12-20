@@ -310,7 +310,7 @@ ____
 . Restart the `items-service`. What happens?
 ____
 
-What is with this file _bootstrap.yml_ instead of application.yml? Well bootstrap.yml is used in Spring Cloud for loading in properties in to a parent application context. Technically, bootstrap.yml is loaded by a parent Spring ApplicationContext. That parent ApplicationContext is loaded before the one that uses application.yml, i.e. properties in bootstrap.yml takes precedence over properties in application.yml.
+What is all this about file _bootstrap.yml_ instead of application.yml? Well bootstrap.yml is used in Spring Cloud for loading properties in to a parent application context. Technically, bootstrap.yml is loaded by a parent Spring ApplicationContext. That parent ApplicationContext is loaded before the one that uses application.yml, i.e. properties in bootstrap.yml takes precedence over properties in application.yml.
 
 `application.yml/application.properties` file is specific to Spring Boot applications. Unless you change the location of external properties of an application, spring boot will always load application.yml from the following location:
 
