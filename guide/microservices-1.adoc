@@ -77,24 +77,9 @@ This is of course a highly simplified service, but it is enough for our purposes
 image::overview-1-items-service.png[]
 
 === Creating the project
+There are actually two ways to create projects via Spring initializr, we can do it either by using the built in wizard in Intellij or using the standard way provided in  https://start.spring.io/. Each way is described below, pick the one you prefer.
 
-[quote]
-____
-. Go to https://start.spring.io/
-. Enter the following values in fields:
-.. `Group:` com.acorn.tutorial
-.. `Artifact:` items-service
-. Add dependencies (search for them and select):
-.. Spring Data JPA
-.. Spring Web
-.. Lombok
-.. Spring Boot Actuator
-.. H2 Database
-. Click `Generate the project`
-. Open the resulting zip and copy the items-service directory to the root of the project (acorn-microservices-tutorial)
-____
-
-Alternative way if using IntelliJ Ultimate:
+==== Spring iniitialzr by using Intellij
 [quote]
 ____
 . Right-click acorn-microservices-tutorial in the Project pane, select `New -> Module...`
@@ -111,6 +96,24 @@ ____
 .. H2 Database
 . Click `Next`
 . Click `Finish`
+____
+
+==== Spring iniitialzr by using website
+
+[quote]
+____
+. Go to https://start.spring.io/
+. Enter the following values in fields:
+.. `Group:` com.acorn.tutorial
+.. `Artifact:` items-service
+. Add dependencies (search for them and select):
+.. Spring Data JPA
+.. Spring Web
+.. Lombok
+.. Spring Boot Actuator
+.. H2 Database
+. Click `Generate the project`
+. Open the resulting zip and copy the items-service directory to the root of the project (acorn-microservices-tutorial)
 ____
 
 Now we need to make the copied project into a child-project of the initial maven project. This means that it is time for edit the parent pom.xml file.

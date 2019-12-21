@@ -291,11 +291,11 @@ What we want the `webapi` to do is this:
 
 ==== Spring Cloud OpenFeign
 
-Spring Cloud OpenFeign is a declarative REST client for Spring Boot applications. Feign makes writing web service clients easier with pluggable annotation support, which includes Feign annotations and JAX-RS annotations.
+Spring Cloud OpenFeign is a declarative REST client for Spring Boot applications. Feign makes writing web service clients easier, it has pluggable annotation support, which includes Feign annotations and JAX-RS annotations.
 
 Also, Spring Cloud adds support for Spring MVC annotations and for using the same HttpMessageConverters as used in Spring Web.
 
-A major benefit with using Feign is that we don't have to write any code for calling the service, other than an interface definition.
+A major benefit with using Feign is that we don't have to write any code for calling a service, other than an interface definition.
 
 https://cloud.spring.io/spring-cloud-openfeign/reference/html/
 
@@ -378,7 +378,7 @@ public interface ReviewsClient {
 ----
 ____
 
-Three things are notable here, namely
+Three things are noteworthy here, namely
 
 * The `@FeignClient(name = "items-service")` and `@FeignClient(name = "reviews-service")` annotation values refer to the service name of each service, the one defined in `bootstrap.yml`, for example
 +

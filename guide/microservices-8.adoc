@@ -12,11 +12,11 @@ endif::[]
 
 == Distributed tracing
 
-One of the problems developers encounter as their microservice apps grow is tracing requests that propagate from one microservice to the next. It can be quite daunting to try and figure out how a requests travels through the app, especially when you may not have any insight into the implementation of the microservice you are calling.
+One of the problems developers encounter as their microservice apps grow, is how to be able to trace requests that propagate from one microservice to the next. It can be quite daunting to figure out how a requests travels through the app, especially when you may not have any insight into the implementation of the microservice you are calling.
 
-Distributed Tracing is crucial for troubleshooting and understanding microservices. It is very useful when we need to track the request passing through multiple microservices. Distributed Tracing can be used to measure the performance of the microservices.
+Distributed Tracing is crucial for troubleshooting and understanding microservices. It is very useful when we need to track the request passing through multiple microservices. Distributed Tracing can be also be used to measure the performance of the microservices.
 
-https://spring.io/projects/spring-cloud-sleuth[Spring Cloud Sleuth] is meant to help with this. It introduces unique IDs to your logging which are consistent between microservice calls which makes it possible to find how a single request travels from one microservice to the next.
+https://spring.io/projects/spring-cloud-sleuth[Spring Cloud Sleuth] is meant to help with this. It introduces unique IDs to your logging which are consistent between microservice calls. This makes it possible to find how a single request travels from one microservice to the next.
 
 === Adding Sleuth tracing
 To add Sleuth tracing to our applications, we need to follow these steps.
@@ -54,7 +54,7 @@ The `webapi`, `items-service` and `reviews-service` logs should look something l
 2019-10-06 16:19:40.223  INFO [reviews-service,dcf4bfcb6aa3dacd,e8e3fa3ca2a57903,false] 35399 --- [nio-9090-exec-2] c.a.t.r.web.ReviewsServiceController : Returning ReviewDto(id=2, type=item, typeId=1, rating=3, ratingMin=1, ratingMax=5, comment=The spoon works until you turn it upside down, then it becomes useless, port=9090)
 ----
 +
-Notice in the logging statements that the trace ids are the same but the span ids are different. The trace ids are what is going to allow you to trace a request as it travels from one service to the next. The span ids are different because we have three different “units of work” occurring, one for each request.
+Look at the logging statements and notice that the trace ids are the same but the span ids are different. The trace ids are what is going to allow you to trace a request as it travels from one service to the next. The span ids are different because we have three different “units of work” occurring, one for each request.
 ____
 
 [TIP]
