@@ -73,3 +73,14 @@ services:
       - "20202:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker,localauth
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://gateway:20202/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  zipkin:
+    image: openzipkin/zipkin
+    mem_limit: 350m
+    ports:
+    - "9411:9411"
