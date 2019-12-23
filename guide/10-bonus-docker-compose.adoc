@@ -1,0 +1,237 @@
+= Spring Cloud
+:toc: left
+:imagesdir: images
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+== Docker and Docker compose
+
+The description at https://docs.docker.com/compose/ sums it all up rather neatly:
+
+_"Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a YAML file to configure your application’s services. Then, with a single command, you create and start all the services from your configuration."_
+
+This means that `docker-compose` is a good fit for us since we by now do have a set of services (applications) that runs independently, but together. Each service can be started as we have done so far, manually or via Intellij. But seen from a development perspective, this becomes rahter cumbersome in the long run.
+
+So, we can use `docker-compose`, but what do we need to do? Well, basically this:
+
+. Each service must be containerized, which essentially means that a `Dockerfile` needs to be added for each service. Luckily, this file does not need to be very complex.
+
+. We must add a file `docker-compose.yml` where we define what makes up or complete application.
+
+. Run it.
+
+=== Adding Dockerfile for each service
+
+
+[quote]
+____
+
+. Start by adding an empty `Dockerfile` to these projects:
++
+* `config-server/Dockerfile`
+* `gateway/Dockerfile`
+* `items-service/Dockerfile`
+* `reviews-service/Dockerfile`
+* `service-discovery-server/Dockerfile`
+* `webapi/Dockerfile`
++
+. Add this content to Dockerfile:
++
+[source,dockerfile]
+----
+FROM openjdk:8
+
+EXPOSE 8080
+
+ADD ./target/*.jar app.jar
+
+ENTRYPOINT ["java","-jar","/app.jar"]
+----
++
+Note that each service exposes the same internal port, 8080. This will be mapped to each service's ordinary port later on in `docker-compose.yml`.
++
+. Add a new spring profile to each service, in each `yml` file under `config-server/src/main/resource/config` please add:
++
+[source,yml]
+----
+---
+spring:
+  profiles: docker
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://service-discovery-server:8761/eureka/
+----
++
+This means that if we start each service with `spring.profiles.active=docker`, they will startup using port 8080. Again, this will eventually be mapped to each service's ordinary port later on in `docker-compose.yml`.
+____
+
+=== Adding docker-compose.yml
+
+Now it is time to do the composing. For this we need to have a file `docker-compose.yml` in place.
+
+[quote]
+____
+
+. Create file `acorn-microservices-tutorial/docker-compose.yml`
+
+. Add the below content (some brief explanations will follow directly below):
++
+[source,yml]
+----
+version: '2.1'
+
+services:
+  config-server:
+    build: config-server
+    mem_limit: 350m
+    ports:
+      - "7777:7777"
+    environment:
+      - SPRING_PROFILES_ACTIVE=native
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://config-server:7777/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  service-discovery-server:
+    build: service-discovery-server
+    mem_limit: 350m
+    depends_on:
+      config-server:
+        condition: service_healthy
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://service-discovery-server:8761/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  items-service:
+    build: items-service
+    mem_limit: 350m
+    depends_on:
+      config-server:
+        condition: service_healthy
+      service-discovery-server:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  reviews-service:
+    build: reviews-service
+    mem_limit: 350m
+    depends_on:
+      config-server:
+        condition: service_healthy
+      service-discovery-server:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  webapi:
+    build: webapi
+    mem_limit: 350m
+    depends_on:
+      config-server:
+        condition: service_healthy
+      service-discovery-server:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  gateway:
+    build: gateway
+    mem_limit: 350m
+    depends_on:
+      config-server:
+        condition: service_healthy
+      service-discovery-server:
+        condition: service_healthy
+    ports:
+      - "20202:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,localauth
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://config-server:20202/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  zipkin:
+    image: openzipkin/zipkin
+    mem_limit: 350m
+    ports:
+    - "9411:9411"
+----
++
+Worth noting here:
+
+* The root `services` has several childs, one for each of our microservices. Each service will get the name specified here, the container of config-server will be named config-server, and so on.
+
+* The `build` attribute points to each service root directory, in which a `Dockerfile` exist. So if `build` is used, `docker-compose` will build a docker image (if it does not already exist, or if it has been changed).
+
+* The `zipkin` service does not use `build`, instead it uses `image`, which means that `docker-compose` will pull that image and run it.
+
+* The `config-server` and `service-discovery-server` is declared to map it's respective ports (7777:7777 and 8761:8761)
+
+* The `items-service`, `reviews-service` and `webapi` does not map any ports at all. Instead they uses `environment` to set the variable `SPRING_PROFILES_ACTIVE=docker`. This is yet another way to specify a spring boot profile. This will eventually startup the services using port 8080. Further more, these services will register themselves to `service-discovery-server` with their _hostname_ and port 8080. The actual hostname will be the container name given by Docker. So in short, the service discovery will be based on unique container names, so the ports can be 8080 for all services here, without conflict.
+
+* `depends_on` is a way to specify the startup order of the containers. We obviously need the `config-server` and `service-discovery-server` up and running before the other containers start calling them.
+____
+
+=== Run the whole application
+
+With all above in place, we can now startup the complete application. The syntax for starting a composed docker environment:
+
+[source,bash]
+----
+docker-compose -f <compose-file.yml> up
+
+# If the <compose-file.yml> is named docker-compose.yml, this shourcut is enough
+docker-compose up
+----
+
+The above command will start all services, and their log output will be seen. Pressing `Ctrl-C` will shutdown all containers.
+
+It is possible to run the process in detached mode:
+
+[source,bash]
+----
+# Starting up in detached mode
+docker-compose up -d
+
+# Tail the logs of all services
+docker-compose logs -f
+
+# Tail the logs of a single service
+docker-compose logs -f items-service
+
+# Start another instance of a service
+docker-compose up -d --scale items-service=2
+
+# Go back to running one instance of the service
+docker-compose up -d --scale items-service=1
+
+# Shut down a single service
+docker-compose up -d --scale items-service=0
+
+# Shut down all services
+docker-compose down
+----
+
+docker ps
+
+curl http://localhost:20202/webapi/items/1 -u frank:abc | jq
