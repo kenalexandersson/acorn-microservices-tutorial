@@ -569,4 +569,4 @@ Let us take a step back and assess where we are right now. We have created a mic
 
 Take a short leg stretcher and come back when you are ready to start work in the Config Server.
 
-<<microservices-2.adoc#,Nextup: Config Server>>
+<<02-config-server.adoc#,Nextup: Config Server>>

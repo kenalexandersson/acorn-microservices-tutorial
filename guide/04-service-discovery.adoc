@@ -314,5 +314,5 @@ ____
 
 The Service Discovery Service is now in place and are ready to register services in our domain. So far we have covered the registration part only. Now it is time to start using the discovery service for looking up other services, something that the _Gateway_ and _WebApi_ will need to do. Let us start with the WebApi.
 
-<<microservices-5.adoc#,Nextup: WebApi>>
+<<05-webapi.adoc#,Nextup: WebApi>>
 

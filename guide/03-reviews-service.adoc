@@ -410,5 +410,5 @@ Take a look at the logs, the application should start fine.
 This means that we have our basic services for items and reviews in place. Good work so far, it is now time to sit back and contemplate where we are going with all this.
 ====
 
-<<microservices-4.adoc#,Nextup: Time for contemplation>>
+<<04-service-discovery.adoc#,Nextup: Time for contemplation>>
 

@@ -616,5 +616,5 @@ It is now a good time to revisit the road map we charted a while ago. Let's have
 
 We are making good progress. The communication chain between `webapi` and `items-service`/`reviews-service` are working. The next section will show how to run several instances of the services at once, and also look on what to do when a single service fails.
 
-<<microservices-6.adoc#,Nextup: Client load balancer and fault tolerance>>
+<<06-client-lb-and-resiliency.adoc#,Nextup: Client load balancer and fault tolerance>>
 

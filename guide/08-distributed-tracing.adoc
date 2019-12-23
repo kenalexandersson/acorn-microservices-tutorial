@@ -174,5 +174,5 @@ ____
 
 This marks the end of the tracing example. Good work! In fact, it is almost the end of the whole session. The last thing for us to do before we leave is to quickly summarize what we have been doing.
 
-<<microservices-9.adoc#,Nextup: Wrapping up>>
+<<09-end-of-the-road.adoc#,Nextup: Wrapping up>>
 

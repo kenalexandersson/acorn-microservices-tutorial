@@ -362,5 +362,5 @@ The `items-service` should now load the config from `config-server` located at h
 
 This concludes our efforts around the Spring Cloud Config Server for the moment. There is of course more to leverage here, like refreshing and pushing changes in the central config out to running clients. But that is for another ocassion. Now it is time to move on to the Reviews service.
 
-<<microservices-3.adoc#,Nextup: Review-Service>>
+<<03-reviews-service.adoc#,Nextup: Review-Service>>
 

@@ -264,5 +264,5 @@ This was of a quick and a bit simplified example of how to use Hystrix. There is
 
 But we are done with it for the moment. Take a quick nap and then come back for the _Gateway_, our single point of entry for outside clients.
 
-<<microservices-7.adoc#,Nextup: Gateway>>
+<<07-gateway.adoc#,Nextup: Gateway>>
 

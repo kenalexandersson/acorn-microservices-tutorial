@@ -786,5 +786,5 @@ curl -X GET http://localhost:20202/webapi/items --user frank:abc
 
 And on this bombshell we are done with the `gateway`. Take a break, and perhaps a beer if it's beer o´clock. Next up is the final topic of Distributed tracing.
 
-<<microservices-8.adoc#,Nextup: Distributed tracing>>
+<<08-distributed-tracing.adoc#,Nextup: Distributed tracing>>
 

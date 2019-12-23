@@ -9,7 +9,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-Welcome to the microservices tutorial at Acorn.
+Welcome to the microservices tutorial.
 
 == Prerequisites
 [NOTE]
@@ -21,4 +21,4 @@ Here is the entry point to the tutorial we will do in the session
 [IMPORTANT]
 Do not start doing the tutorial in advance! Wait until you are physically seated in the classroom!
 
-<<guide/microservices-1.adoc#,Tutorial: Microservices>>
+<<guide/01-items-service.adoc#,Tutorial: Microservices>>
