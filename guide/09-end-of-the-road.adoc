@@ -53,5 +53,11 @@ Let us do a brief recapitulation before we close the session. This is what we di
 |Finally we added tracing capabilities so we could keep track of the path a request to the system took. This can be used with tools like _Zipkin_.
 |===
 
+By now you should hopefully have a clearer picture of the patterns around microservices and why they are needed. There is of course a lot more to dig into in this field of expertise, like _central logging_, _metrics_, tools like _Istio_ and _Kubernetes_ and more, but that is a topic for future sessions.
+
 Just a final recommendation before you leave:
 http://lucasmatt.com/2017/08/22/spring-microservices/[Spring Cloud in 10 Bad Cartoons]
+
+== Bonus material
+
+Your hunger not yet stilled, having appetite for more? Then head on to the <<10-bonus-docker-compose.adoc#,bonus section>>!
