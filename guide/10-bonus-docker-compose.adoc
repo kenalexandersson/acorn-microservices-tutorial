@@ -41,7 +41,7 @@ ____
 * `service-discovery-server/Dockerfile`
 * `webapi/Dockerfile`
 +
-. Add this content to Dockerfile:
+. Add this content to each Dockerfile:
 +
 [source,dockerfile]
 ----
@@ -54,7 +54,8 @@ ADD ./target/*.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
 ----
 +
-Note that each service exposes the same internal port, 8080. This will be mapped to each service's ordinary port later on in `docker-compose.yml`.
+[NOTE]
+The dockerfile for each service exposes the same internal port, 8080. This will be mapped to each service's ordinary port later on in `docker-compose.yml`.
 +
 . Add a new spring profile to each service, in each `yml` file under `config-server/src/main/resource/config` please add:
 +
@@ -179,7 +180,7 @@ services:
 +
 Worth noting here:
 
-* The root `services` has several childs, one for each of our microservices. Each service will get the name specified here, the container of config-server will be named config-server, and so on.
+* The root `services` has several childs, one for each of our microservices. Each service will get the name specified here, the container of `config-server` will be named _config-server_, and so on.
 
 * The `build` attribute points to each service root directory, in which a `Dockerfile` exist. So if `build` is used, `docker-compose` will build a docker image (if it does not already exist, or if it has been changed).
 
@@ -187,7 +188,7 @@ Worth noting here:
 
 * The `config-server` and `service-discovery-server` is declared to map it's respective ports (7777:7777 and 8761:8761)
 
-* The `items-service`, `reviews-service` and `webapi` does not map any ports at all. Instead they uses `environment` to set the variable `SPRING_PROFILES_ACTIVE=docker`. This is yet another way to specify a spring boot profile. This will eventually startup the services using port 8080. Further more, these services will register themselves to `service-discovery-server` with their _hostname_ and port 8080. The actual hostname will be the container name given by Docker. So in short, the service discovery will be based on unique container names, so the ports can be 8080 for all services here, without conflict.
+* The `items-service`, `reviews-service` and `webapi` does not map any ports at all. Instead they uses `environment` to set the variable `SPRING_PROFILES_ACTIVE=docker`. This is yet another way to specify a spring boot profile. This will eventually startup the services using port 8080. Further more, these services will register themselves to `service-discovery-server` with their _hostname_ and port 8080. The actual hostname will be the container name given by Docker. So in short, the service discovery will be based on unique container names, which means that the ports can be 8080 for all services here, without conflict.
 
 * `depends_on` is a way to specify the startup order of the containers. We obviously need the `config-server` and `service-discovery-server` up and running before the other containers start calling them.
 ____
