@@ -97,7 +97,7 @@ services:
     build: config-server
     mem_limit: 350m
     ports:
-      - "7777:7777"
+      - "7777:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=native
     healthcheck:
@@ -113,7 +113,7 @@ services:
       config-server:
         condition: service_healthy
     ports:
-      - "8761:8761"
+      - "8761:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://service-discovery-server:8761/actuator/health"]
       interval: 5s
@@ -186,9 +186,9 @@ Worth noting here:
 
 * The `zipkin` service does not use `build`, instead it uses `image`, which means that `docker-compose` will pull that image and run it.
 
-* The `config-server` and `service-discovery-server` is declared to map it's respective ports (7777:7777 and 8761:8761)
+* The `config-server`, `service-discovery-server` and `gateway` maps their respective ports to 8080 (7777:8080, 8761:8080 and 20202:8080), this because they all use a fixed port to which other services or browser connects.
 
-* The `items-service`, `reviews-service` and `webapi` does not map any ports at all. Instead they uses `environment` to set the variable `SPRING_PROFILES_ACTIVE=docker`. This is yet another way to specify a spring boot profile. This will eventually startup the services using port 8080. Further more, these services will register themselves to `service-discovery-server` with their _hostname_ and port 8080. The actual hostname will be the container name given by Docker. So in short, the service discovery will be based on unique container names, which means that the ports can be 8080 for all services here, without conflict.
+* The `items-service`, `reviews-service` and `webapi` does not map any ports at all. Instead they uses `environment` to set the variable `SPRING_PROFILES_ACTIVE=docker` (yet another way to specify a spring boot profile). This will eventually startup the services using port 8080. Furthermore, these services will register themselves to `service-discovery-server` with their _hostname_ and port 8080. The actual hostname will be the container name given by Docker. So in short, the service discovery will be based on unique container names, which means that the ports can be 8080 for all services here, without any conflict.
 
 * `depends_on` is a way to specify the startup order of the containers. We obviously need the `config-server` and `service-discovery-server` up and running before the other containers start calling them.
 ____
