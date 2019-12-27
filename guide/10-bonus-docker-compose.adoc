@@ -16,13 +16,13 @@ The description at https://docs.docker.com/compose/ sums it all up rather neatly
 
 _"Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a YAML file to configure your application’s services. Then, with a single command, you create and start all the services from your configuration."_
 
-This means that `docker-compose` is a good fit for us since we by now do have a set of services (applications) that runs independently, but together. Each service can be started as we have done so far, manually or via Intellij. But seen from a development perspective, this becomes rahter cumbersome in the long run.
+This means that `docker-compose` is a good fit for us since we by now do have a set of services (applications) that can be started independently, but they must be run together for the whole system to work. Although each service can be started as we have done so far, manually or via Intellij, seen from a development perspective this becomes rather cumbersome in the long run. Docker compose can help us by providing a quick way to spin up things.
 
 So, we can use `docker-compose`, but what do we need to do? Well, basically this:
 
 . Each service must be containerized, which essentially means that a `Dockerfile` needs to be added for each service. Luckily, this file does not need to be very complex.
 
-. We must add a file `docker-compose.yml` where we define what makes up or complete application.
+. We must add a file `docker-compose.yml` where we define what makes up a complete application.
 
 . Run it.
 
