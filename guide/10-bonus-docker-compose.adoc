@@ -219,20 +219,70 @@ docker-compose logs -f
 
 # Tail the logs of a single service
 docker-compose logs -f items-service
+----
 
-# Start another instance of a service
+Try it out by executing the REST-call
+
+[source,bash]
+curl http://localhost:20202/webapi/items/1 -u frank:abc | jq
+
+.Example of result, note the value of field `serviceAddress`
+[source,json]
+----
+{
+  "item": {
+    "id": 1,
+    "name": "Spoon",
+    "serviceAddress": "4fbe43c3c0ef/172.18.0.7:8080"
+  },
+  "reviews": [
+    {
+      "id": 2,
+      "type": "item",
+      "typeId": 1,
+      "rating": 3,
+      "ratingMin": 1,
+      "ratingMax": 5,
+      "comment": "The spoon works until you turn it upside down, then it becomes useless",
+      "serviceAddress": "427b75d73c34/172.18.0.5:8080"
+    },
+    {
+      "id": 5,
+      "type": "item",
+      "typeId": 1,
+      "rating": 2,
+      "ratingMin": 1,
+      "ratingMax": 5,
+      "comment": "The one I got was completely flat",
+      "serviceAddress": "427b75d73c34/172.18.0.5:8080"
+    }
+  ]
+}
+----
+
+It is fairly easy to spin up several instances of a service:
+
+[source,bash]
+----
+# Start another instance of a service (using it's container name)
 docker-compose up -d --scale items-service=2
+----
 
+Try it out by calling the application again and notice how the `item.serviceAddress` changes when the client loadbalancer does its work.
+
+Here are some more commands to try out:
+[source,bash]
+----
 # Go back to running one instance of the service
 docker-compose up -d --scale items-service=1
 
 # Shut down a single service
 docker-compose up -d --scale items-service=0
 
-# Shut down all services
+# Scale several services at once
+docker-compose up -d --scale items-service=2 --scale reviews-service=3
+
+# Shut down all services and remove containers
 docker-compose down
 ----
 
-docker ps
-
-curl http://localhost:20202/webapi/items/1 -u frank:abc | jq
