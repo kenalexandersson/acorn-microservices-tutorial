@@ -133,6 +133,10 @@ Before
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <modules>
+        <module>util</module>
+    </modules>
+
 </project>
 ----
 After
@@ -146,6 +150,7 @@ After
     <packaging>pom</packaging>
 
     <modules>
+        <module>util</module>
         <module>items-service</module>
     </modules>
 </project>
@@ -176,6 +181,7 @@ Expected outcome after running the command:
 ----
 [INFO] Reactor Summary for acorn-microservices-tutorial 0.0.1-SNAPSHOT:
 [INFO]
+[INFO] util ............................................... SUCCESS [  1.511 s]
 [INFO] items-service ...................................... SUCCESS [  4.540 s]
 [INFO] acorn-microservices-tutorial ....................... SUCCESS [  0.316 s]
 [INFO] ------------------------------------------------------------------------
@@ -407,15 +413,19 @@ ____
 +
 [source,java]
 ----
+package com.acorn.tutorial.itemsservice.web;
+
+import com.acorn.tutorial.itemsservice.model.Item;
+import com.acorn.tutorial.itemsservice.repository.ItemRepository;
+import com.acorn.tutorial.util.ServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import com.acorn.tutorial.itemsservice.model.Item;
-import com.acorn.tutorial.itemsservice.repository.ItemRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class ItemsServiceController {
@@ -424,17 +434,18 @@ public class ItemsServiceController {
 
     private ItemRepository itemRepository;
 
-    private Environment environment;
+    private ServiceUtil serviceUtil;
 
     @Autowired
-    public ItemsServiceController(ItemRepository itemRepository, Environment environment) {
+    public ItemsServiceController(ItemRepository itemRepository, ServiceUtil serviceUtil) {
         this.itemRepository = itemRepository;
-        this.environment = environment;
+        this.serviceUtil = serviceUtil;
     }
 
     @GetMapping(path = "/items", produces = "application/json")
     public List<ItemDto> getAllItems() {
-        return itemRepository.findAll().stream()
+        return itemRepository.findAll()
+                .stream()
                 .map(this::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -448,8 +459,7 @@ public class ItemsServiceController {
     }
 
     private ItemDto toItemDto(Item item) {
-        int port = Integer.parseInt(environment.getProperty("local.server.port", "0"));
-        final ItemDto itemDto = ItemDto.of(item, port);
+        final ItemDto itemDto = ItemDto.of(item, serviceUtil.getServiceAddress());
         LOGGER.info(String.format("Returning %s", itemDto));
         return itemDto;
     }
@@ -471,6 +481,8 @@ ____
 +
 [source,java]
 ----
+package com.acorn.tutorial.itemsservice.web;
+
 import com.acorn.tutorial.itemsservice.model.Item;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -481,14 +493,32 @@ public class ItemDto {
 
     private Long id;
     private String name;
-    private int port;
+    private String serviceAddress;
 
-    public static ItemDto of(Item item, int port) {
-        return new ItemDto(item.getId(), item.getName(), port);
+    public static ItemDto of(Item item, String serviceAddress) {
+        return new ItemDto(item.getId(), item.getName(), serviceAddress);
     }
 }
 ----
 ____
+
+==== ServiceUtil
+The `ItemsServiceController` constructs a response containing an `ItemDto`, into which the current service's address (hostname and port) is given via `serviceUtil.getServiceAddress()`. The `ServiceUtil.java` class is already available for use in the `util` module, so to get access to it, just add this dependency to `items-service/pom.xml`:
+
+[source,xml]
+----
+<dependencies>
+    ... (other dependencies omitted for brevity)
+
+    <dependency>
+        <groupId>com.acorn.tutorial</groupId>
+        <artifactId>util</artifactId>
+        <version>${project.version}</version>
+    </dependency>
+
+    ...
+</dependencies>
+----
 
 ==== ItemNotFoundException and ItemNotFoundAdvice
 The final classes to add in order to get everything under control are the `ItemNotFoundException` class that is thrown when an `Item` cannot be found, and the `ItemNotFoundAdvice` class that will handle the exception and produce the appropriate response status code to send back to client.

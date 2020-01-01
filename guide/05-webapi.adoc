@@ -92,6 +92,7 @@ Expected outcome after running the command:
 ----
 [INFO] Reactor Summary for acorn-microservices-tutorial 0.0.1-SNAPSHOT:
 [INFO]
+[INFO] util ............................................... SUCCESS [  1.511 s]
 [INFO] config-server ...................................... SUCCESS [  5.067 s]
 [INFO] service-discovery-server ........................... SUCCESS [  2.776 s]
 [INFO] items-service ...................................... SUCCESS [  4.540 s]

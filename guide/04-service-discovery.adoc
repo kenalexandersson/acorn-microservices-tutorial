@@ -28,7 +28,7 @@ We also need to implement the _WebApi_ component, which isn't a Spring Cloud too
 Well upon first look the _WebApi_ component is the entrance API for fetching information from the underlying _Items_ and _Reviews_ services. Any interested client will call the WebApi to, say, request item info and reviews for an item X. The client calls the WebApi only and hence does not need to know the addresses to the _items_/_reviews_ services (in fact we don't want an outside client to know about this).
 
 === Backends For Frontends
-There is an architectural pattern known as Backends for Frontends (BFF) that our solution is influenced by. We will not deep dive in this pattern here, but the gist of it is as follows:
+There is an architectural pattern known as Backends for Frontends (BFF) that our solution is influenced by. We will not deep dive into this pattern here, but the gist of it is as follows:
 
 Instead of providing a single general purpose API that is used by any type of client, like a _web application_ (written in React, Angular, Vue or whatever) or a _mobile client_ (iOS, Android), BFF is all about providing a tailored API for the web application, and another tailored API for the mobile client.
 
@@ -135,6 +135,7 @@ Expected outcome after running the command:
 ----
 [INFO] Reactor Summary for acorn-microservices-tutorial 0.0.1-SNAPSHOT:
 [INFO]
+[INFO] util ............................................... SUCCESS [  1.511 s]
 [INFO] config-server ...................................... SUCCESS [  5.067 s]
 [INFO] service-discovery-server ........................... SUCCESS [  2.776 s]
 [INFO] items-service ...................................... SUCCESS [  4.540 s]
