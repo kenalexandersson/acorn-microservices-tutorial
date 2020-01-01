@@ -80,7 +80,7 @@ spring:
 ----
 +
 [NOTE]
-When starting in `spring.profiles.active`, each service will call the config server using the hostname `config-server` (instead of localhost). The actual name `config-server` will get defined in the `docker-compose.yml`, which we will create shortly.
+When starting in `spring.profiles.active=docker` mode, each service will call the config server using the hostname `config-server` (instead of localhost). The actual name `config-server` will get defined in the `docker-compose.yml`, which we will create shortly.
 +
 . Add a new spring profile to each service, in each `yml` file under `config-server/src/main/resource/config` please add:
 +
