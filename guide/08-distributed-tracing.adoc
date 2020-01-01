@@ -144,7 +144,7 @@ If using IntelliJ, you can mark all desired components and restart them in one g
 image::restart-many.png[]
 ====
 
-. Access http://localhost:20202/webapi/items
+. Access `curl http://localhost:20202/webapi/items | jq`
 
 . Look at the logs. You should see something close to this:
 +

@@ -83,15 +83,15 @@ java -jar target/items-service-0.0.1-SNAPSHOT.jar --server.port=8085
 ----
 +
 . Look at Eureka, http://localhost:8761/, to see if it has registered two instances of `items-service`
-. Access http://localhost:8100/webapi/items
+. Access `curl http://localhost:8100/webapi/items | jq`
 +
-Check the value of _item.port_ in JSON output
+Check the value of _item.serviceAddress_ in JSON output
 +
-. Refresh http://localhost:8100/webapi/items repeatedly. After ~30 seconds the loadbalancer should start alternating between port 8080 and 8085
+. Run `curl http://localhost:8100/webapi/items | jq` repeatedly. After ~30 seconds the loadbalancer should start alternating between port 8080 and 8085
 +
 . Shutdown one of the instances
 +
-Refresh http://localhost:8100/webapi/items again. You should immediately see that the loadbalancer falls back to using one port only.
+Run `curl http://localhost:8100/webapi/items | jq` again. You should immediately see that the loadbalancer falls back to using one port only.
 ____
 
 Repeat the process for `reviews-service`, if you are in the mood for it. It is always fun to see the ports in the JSON-output flutter around.
@@ -118,7 +118,7 @@ Let's try Hystrix out.
 ____
 . Turn off all instances of items service
 . Make sure all other services are running
-. Access http://localhost:8100/webapi/items/1
+. Access `curl http://localhost:8100/webapi/items/1 | jq`
 +
 Initially in the server logs you should see an error saying
 +
@@ -145,7 +145,7 @@ feign:
     enabled: true
 ----
 +
-. Restart `webapi` and access http://localhost:8100/webapi/items/1
+. Restart `webapi` and access `curl http://localhost:8100/webapi/items/1 | jq`
 +
 The logs shows that we still get the same ClientException, but the response body now says
 +
@@ -247,12 +247,12 @@ public interface ReviewsClient {
 }
 ----
 
-. Restart `webapi` and access http://localhost:8100/webapi/items/1
+. Restart `webapi` and access `curl http://localhost:8100/webapi/items/1 | jq`
 +
 The resource should now return 200 OK again and a JSON response. Note the empty fallback _"items": null_.
 +
 . Turn on one `items-service` instance again
-. Refresh http://localhost:8100/webapi/items/1 repeatedly, after approximately 30 seconds the instance will be detected again and the items part will be back to normal.
+. Run `curl http://localhost:8100/webapi/items/1 | jq` repeatedly, after approximately 30 seconds the instance will be detected again and the items part will be back to normal.
 +
 [NOTE]
 ====

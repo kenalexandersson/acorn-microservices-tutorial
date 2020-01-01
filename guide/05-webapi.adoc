@@ -136,7 +136,7 @@ mvn clean install -DskipTests
 ----
 +
 . Restart `config-server`
-. Verify that all looks good by accessing http://localhost:7777/webapi/default
+. Verify that all looks good by accessing `curl http://localhost:7777/webapi/default | jq`
 ____
 
 Next create the `webapi/src/main/resources/bootstrap.yml` and add config for binding to `config-server`
@@ -597,10 +597,10 @@ Make sure that the all the other applications are up and running before trying t
 
 Take a look at the logs, the application should start fine.
 
-* Check the health status: http://localhost:8100/actuator/health
+* Check the health status: `curl http://localhost:8100/actuator/health | jq`
 * Check Eureka, all relevant apps should be registered: http://localhost:8761
-* Fetch all items with corresponding reviews: http://localhost:8100/webapi/items
-* Fetch a specific item with corresponding reviews: http://localhost:8100/webapi/items/1
+* Fetch all items with corresponding reviews: `curl http://localhost:8100/webapi/items | jq`
+* Fetch a specific item with corresponding reviews: `curl http://localhost:8100/webapi/items/1 | jq`
 
 === Road map revisited
 It is now a good time to revisit the road map we charted a while ago. Let's have a look at it and add some comments about our current progress.

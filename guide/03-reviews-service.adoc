@@ -437,10 +437,10 @@ java -jar reviews-service-0.0.1-SNAPSHOT.jar
 
 Take a look at the logs, the application should start fine.
 
-* Check the health status: http://localhost:9090/actuator/health
-* All reviews: http://localhost:9090/reviews
-* All reviews for the item type: http://localhost:9090/reviews/item
-* A specific review for an item type: http://localhost:9090/reviews/item/2
+* Check the health status: `curl http://localhost:9090/actuator/health | jq`
+* All reviews: `curl http://localhost:9090/reviews | jq`
+* All reviews for the item type: `curl http://localhost:9090/reviews/item | jq`
+* A specific review for an item type: `curl http://localhost:9090/reviews/item/2 | jq`
 
 [NOTE]
 ====

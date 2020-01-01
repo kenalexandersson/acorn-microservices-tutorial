@@ -163,7 +163,7 @@ mvn clean install -DskipTests
 ----
 +
 . Restart `config-server`
-. Verify that all looks good by accessing http://localhost:7777/gateway/default
+. Verify that all looks good by accessing `curl http://localhost:7777/gateway/default | jq`
 ____
 
 Next create the `bootstrap.yml` and add config for binding to `config-server`
@@ -205,9 +205,9 @@ java -jar gateway-0.0.1-SNAPSHOT.jar
 
 Take a look at the logs, the application should start fine.
 
-* Check the health status: http://localhost:20202/actuator/health
+* Check the health status: `curl http://localhost:20202/actuator/health | jq`
 * Check Eureka, the `gateway` should be registered: http://localhost:8761
-* Access http://localhost:20202/webapi/items
+* Access `curl http://localhost:20202/webapi/items | jq`
 
 [WARNING]
 ====
@@ -238,7 +238,7 @@ Hooray, you should now have been routed to the `webapi` properly.
 
 Now to the next part, find out what happens if you access one of the services behind `webapi` directly via the `gateway`:
 
-* http://localhost:20202/items-service/items
+* `curl http://localhost:20202/items-service/items | jq`
 
 What happened? Did you get a response with items?
 
@@ -267,9 +267,9 @@ As it is setup right now, you should actually get a response from `items-service
 
 In fact, this is true for all the other services as well (you can see them listed at http://localhost:20202/actuator/routes). It is hence possible to also access
 
-* http://localhost:20202/reviews-service/reviews
+* `curl http://localhost:20202/reviews-service/reviews | jq`
 
-* http://localhost:20202/service-discovery-server
+* `curl http://localhost:20202/service-discovery-server | jq`
 
 * (but not config-server, because it has not been registered in `service-discovery-server`)
 
@@ -370,7 +370,7 @@ public class ForbiddenPathFilter extends ZuulFilter {
 +
 . Restart the application and check if you can see the filter in http://localhost:20202/actuator/filters
 
-. Access http://localhost:20202/items-service/items again
+. Access `curl -v http://localhost:20202/items-service/items` again
 .. It should now return 404
 ____
 

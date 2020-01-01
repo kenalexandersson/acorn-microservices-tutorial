@@ -180,7 +180,7 @@ mvn clean install -DskipTests
 ----
 +
 . Restart `config-server`
-. Verify that all looks good by accessing http://localhost:7777/service-discovery-server/default
+. Verify that all looks good by accessing `curl http://localhost:7777/service-discovery-server/default | jq`
 ____
 
 Next create the `bootstrap.yml` and add config for binding to `config-server`
@@ -288,7 +288,7 @@ Option 2:: Add these dependencies to `service-discovery-server/pom.xml`
 
 Take a look at the logs, the application should start fine.
 
-* Check the health status: http://localhost:8761/actuator/health
+* Check the health status: `curl http://localhost:8761/actuator/health | jq`
 
 * Browse to the Eureka UI at http://localhost:8761, expected result:
 

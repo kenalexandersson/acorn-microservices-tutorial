@@ -568,34 +568,48 @@ ____
 
 This work pretty much sums it up. We now have our small and astoundingly simple microservice in place, ready to serve items to interested clients.
 
-Please start the application and verify that it works by accessing it via
+Please start the application and verify that it works by using the below curl commands.
 
-* http://localhost:8080/items
-* http://localhost:8080/items/1
-* http://localhost:8080/items/2
-* http://localhost:8080/items/3
-* http://localhost:8080/items/99
+[NOTE]
+====
+The below curl examples pipes the result through `jq`, which is a lightweight JSON processor. It helps us formatting the output.
+
+It is easily installed:
+
+* Linux (Fedora, RHEL): `dnf install jq`
+* Linux (Ubuntu): `apt-get install jq`
+* macOs: `brew install jq`
+* Windows Cygwin: Search for `jq` in the Cygwin install manager
+
+If you cannot install jq, just run below curl commands without `"| jq"`
+====
+
+* `curl http://localhost:8080/items | jq`
+* `curl http://localhost:8080/items/1 | jq`
+* `curl http://localhost:8080/items/2 | jq`
+* `curl http://localhost:8080/items/3 | jq`
+* `curl http://localhost:8080/items/99 | jq`
 
 You should be able to see the all items from database (unless item with number 99, since it is not there).
 
 [source,json]
 ----
 [
-    {
-        "id": 1,
-        "name": "Spoon",
-        "port": 8080
-    },
-    {
-        "id": 2,
-        "name": "Fork",
-        "port": 8080
-    },
-    {
-        "id": 3,
-        "name": "Knife",
-        "port": 8080
-    }
+  {
+    "id": 1,
+    "name": "Spoon",
+    "serviceAddress": "<hostname>/192.168.1.186:8080"
+  },
+  {
+    "id": 2,
+    "name": "Fork",
+    "serviceAddress": "<hostname>/192.168.1.186:8080"
+  },
+  {
+    "id": 3,
+    "name": "Knife",
+    "serviceAddress": "<hostname>/192.168.1.186:8080"
+  }
 ]
 ----
 

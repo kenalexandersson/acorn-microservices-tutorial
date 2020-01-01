@@ -163,7 +163,7 @@ java -jar config-server-0.0.1-SNAPSHOT.jar
 
 Take a look at the logs, the application should start fine.
 
-Check the health status: http://localhost:8888/actuator/health
+Check the health status: `curl http://localhost:8888/actuator/health | jq`
 
 === Moving configuration from items-service
 We are now in the position to start using the `config-server`, letting it manage the configuration for other components in the project. So far we only have one, the `items-service` component, so it makes sense to start moving it's config into the `config-server`.
@@ -364,7 +364,7 @@ ____
 
 The `items-service` should now load the config from `config-server` located at http://localhost:7777.
 
-This concludes our efforts around the Spring Cloud Config Server for the moment. There is of course more to leverage here, like refreshing and pushing changes in the central config out to running clients. But that is for another ocassion. Now it is time to move on to the Reviews service.
+This concludes our efforts around the Spring Cloud Config Server for the moment. There is of course more to leverage here, like refreshing and pushing changes in the central config out to running clients. But that is for another occasion. Now it is time to move on to the Reviews service.
 
 <<03-reviews-service.adoc#,Nextup: Review-Service>>
 
