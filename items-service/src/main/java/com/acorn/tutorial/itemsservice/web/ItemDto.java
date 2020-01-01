@@ -12,7 +12,7 @@ public class ItemDto {
     private String name;
     private String serviceAddress;
 
-    public static ItemDto of(Item item, String port) {
-        return new ItemDto(item.getId(), item.getName(), port);
+    public static ItemDto of(Item item, String serviceAddress) {
+        return new ItemDto(item.getId(), item.getName(), serviceAddress);
     }
 }
