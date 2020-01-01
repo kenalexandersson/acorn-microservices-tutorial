@@ -37,6 +37,9 @@ server:
 spring:
   profiles: docker
 
+  zipkin:
+    base-url: http://zipkin:9411
+
 server:
   port: 8080
 

@@ -3,5 +3,14 @@ spring:
     name: service-discovery-server
   cloud:
     config:
+      uri: http://localhost:7777
+      fail-fast: true
+
+---
+spring:
+  profiles: docker
+
+  cloud:
+    config:
       uri: http://config-server:7777
       fail-fast: true
