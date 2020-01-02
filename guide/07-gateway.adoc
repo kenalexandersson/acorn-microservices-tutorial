@@ -21,7 +21,7 @@ We will create a gateway server based on https://cloud.spring.io/spring-cloud-ne
 ====
 Zuul Vs Spring Cloud Gateway
 
-Spring has put the project `spring-cloud-starter-netflix-zuul` (that we user here) in maintenance mode, which means that no new development takes place there (only critical bug fixes). Instead Spring provides a replacement in the form of Spring Cloud Gateway. There is a distinct difference between the technology behind the two projects, Spring Cloud Gateway is built on Spring Framework 5, Project Reactor. This means that it uses non-blocking techniques when handling requests.
+Spring has put the project `spring-cloud-starter-netflix-zuul` (that we use here) in maintenance mode, which means that no new development takes place there (only critical bug fixes). Instead Spring provides a replacement in the form of Spring Cloud Gateway. There is a distinct difference between the technology behind the two projects, Spring Cloud Gateway is built on Spring Framework 5, Project Reactor. This means that it uses non-blocking techniques when handling requests.
 
 Zuul (v1) is a blocking gateway while Spring Cloud Gateway is a non-blocking gateway. In case of non-blocking, the main thread is always available to serve the request and other multiple threads process those requests asynchronously in the background and once the request is completely processed the response is returned. Hence non-blocking model requires a less no of resources to serve the same amount of requests as compared to blocking gateway.
 
@@ -45,7 +45,7 @@ ____
 .. `Group:` com.acorn.tutorial
 .. `Artifact:` gateway
 . Add dependencies (search for them and select):
-.. Config Client
+.. Spring Cloud Config Client
 .. Eureka Discovery Client
 .. Zuul
 .. Spring Web
@@ -211,7 +211,7 @@ Take a look at the logs, the application should start fine.
 
 [WARNING]
 ====
-Oh no, it doesn't work! You get the message _There was an unexpected error (type=Not Found, status=404)_.
+Oh no, it doesn't work! You get the error _Not Found, status=404_.
 
 Well that is because you forgot to enable the _Zuul proxy_ (schmuck) so no routing is going on. Open `gateway/src/main/java/com/acorn/tutorial/gateway/GatewayApplication.java` and add `@EnableZuulProxy`:
 
@@ -250,26 +250,27 @@ As it is setup right now, you should actually get a response from `items-service
   {
     "id": 1,
     "name": "Spoon",
-    "port": 8081
+    "serviceAddress": "<hostname>/10.67.22.148:8080"
   },
   {
     "id": 2,
     "name": "Fork",
-    "port": 8081
+    "serviceAddress": "<hostname>/10.67.22.148:8080"
   },
   {
     "id": 3,
     "name": "Knife",
-    "port": 8081
+    "serviceAddress": "<hostname>/10.67.22.148:8080"
   }
 ]
+
 ----
 
-In fact, this is true for all the other services as well (you can see them listed at http://localhost:20202/actuator/routes). It is hence possible to also access
+In fact, this is true for all the other services as well (you can see them listed using `curl http://localhost:20202/actuator/routes | jq`). It is hence possible to also access
 
 * `curl http://localhost:20202/reviews-service/reviews | jq`
 
-* `curl http://localhost:20202/service-discovery-server | jq`
+* http://localhost:20202/service-discovery-server (in web browser)
 
 * (but not config-server, because it has not been registered in `service-discovery-server`)
 
@@ -293,7 +294,7 @@ The following are the key characteristics of a Zuul Filter:
 
 Zuul provides a framework to dynamically read, compile, and run these Filters. Filters do not communicate with each other directly - instead they share state through a RequestContext which is unique to each request.
 
-A visit to http://localhost:20202/actuator/filters shows the default Zuul filters that always are in effect. It is also possible to add custom filters to the filter chain, something we will do right now.
+`curl http://localhost:20202/actuator/filters | jq` shows the default Zuul filters that always are in effect. It is also possible to add custom filters to the filter chain, something we will do right now.
 
 Let's add a filter with the following abilities:
 
@@ -309,9 +310,15 @@ ____
 +
 [source,java]
 ----
+package com.acorn.tutorial.gateway.routing;
+
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
+
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
@@ -347,6 +354,7 @@ public class ForbiddenPathFilter extends ZuulFilter {
     }
 
     @Override
+    @SneakyThrows
     public Object run() {
 
         // This method is only executed if shouldFilter() returns true
@@ -354,7 +362,8 @@ public class ForbiddenPathFilter extends ZuulFilter {
         // Halt the process and return 404
         RequestContext requestContext = RequestContext.getCurrentContext();
         requestContext.unset();
-        requestContext.getResponse().setContentType("text/html");
+        requestContext.getResponse().setContentType("application/json");
+        requestContext.getResponse().getWriter().println("{\"message\": \"404 not found (or rather ForbiddenPathFilter strikes again)\"}");
         requestContext.setResponseStatusCode(404);
         requestContext.setSendZuulResponse(false);
 
@@ -370,7 +379,7 @@ public class ForbiddenPathFilter extends ZuulFilter {
 +
 . Restart the application and check if you can see the filter in http://localhost:20202/actuator/filters
 
-. Access `curl -v http://localhost:20202/items-service/items` again
+. Access `curl http://localhost:20202/items-service/items | jq` again
 .. It should now return 404
 ____
 
