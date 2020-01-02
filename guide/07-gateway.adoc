@@ -377,7 +377,7 @@ public class ForbiddenPathFilter extends ZuulFilter {
 }
 ----
 +
-. Restart the application and check if you can see the filter in http://localhost:20202/actuator/filters
+. Restart the application and check if you can see the filter in `curl http://localhost:20202/actuator/filters | jq`
 
 . Access `curl http://localhost:20202/items-service/items | jq` again
 .. It should now return 404
@@ -486,7 +486,7 @@ Note that the encrypted password in clear text is _abc_.
 +
 [source,java]
 ----
-import lombok.Value;
+import lombok.Data;
 
 import java.util.List;
 
@@ -785,16 +785,15 @@ cd acorn-microservices-tutorial/gateway/target
 java -jar gateway-0.0.1-SNAPSHOT.jar --spring.profiles.active=localauth
 ----
 
-When all is up and running, access the application again at http://localhost:20202/webapi/items. Use _frank_ och _abc_ to get pass.
+When all is up and running, access the application again and use _frank_ och _abc_ to get in.
 
-Alternatively, if you have `curl` on your system, you can open a command prompt and run
 [source,bash]
 ----
 # This should yield a 401
-curl -X GET http://localhost:20202/webapi/items
+curl http://localhost:20202/webapi/items | jq
 
 # This should be fine
-curl -X GET http://localhost:20202/webapi/items --user frank:abc
+curl http://localhost:20202/webapi/items --user frank:abc | jq
 ----
 
 And on this bombshell we are done with the `gateway`. Take a break, and perhaps a beer if it's beer o´clock. Next up is the final topic of Distributed tracing.
