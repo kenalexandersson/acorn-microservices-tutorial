@@ -78,6 +78,7 @@ ____
     ...
 
     <modules>
+        <module>util</module>
         <module>config-server</module>
         <module>items-service</module>
     </modules>
@@ -195,6 +196,9 @@ logging:
     ROOT: INFO
     org.hibernate.stat: INFO
     org.hibernate.type: INFO
+
+server:
+  port: 8080
 ----
 +
 . Make sure that the moved configuration is totally removed from `items-service/src/main/resources/application.yml`, it should now look like this:
@@ -204,9 +208,6 @@ logging:
 spring:
   application:
     name: items-service
-
-server:
-  port: 8080
 ----
 ____
 
@@ -289,7 +290,7 @@ ____
 
 The `items-service` application should now start with config loaded from `config-server`. This can be checked as follows:
 
-* `config-server`: Use http://localhost:8888/items-service/default to see the stored config for `items-service`. The json object "propertySources" should hold the expected config.
+* `config-server`: Use `curl http://localhost:8888/items-service/default | jq` to see the stored config for `items-service`. The json object "propertySources" should hold the expected config.
 * `items-service`: Use http://localhost:8080/h2-console and see if the console is accessible. It is disabled by default, so if it is present it means that the our config read from server is in effect.
 
 === Overriding default setup
@@ -311,10 +312,10 @@ ____
 . Open `config-server/src/main/resources/bootstrap.yml`.
 . Change the `server.port` value to 7777
 . Restart the `config-server` and verify it runs on the new port
-. Restart the `items-service`. What happens?
+. Restart the `items-service`. Expect to see a connection error log since the service tries to connect to port 8888.
 ____
 
-What is all this about file _bootstrap.yml_ instead of application.yml? Well bootstrap.yml is used in Spring Cloud for loading properties in to a parent application context. Technically, bootstrap.yml is loaded by a parent Spring ApplicationContext. That parent ApplicationContext is loaded before the one that uses application.yml, i.e. properties in bootstrap.yml takes precedence over properties in application.yml.
+What's this about file _bootstrap.yml_ instead of application.yml? Well bootstrap.yml is used in Spring Cloud for loading properties in to a parent application context. Technically, bootstrap.yml is loaded by a parent Spring ApplicationContext. That parent ApplicationContext is loaded before the one that uses application.yml, i.e. properties in bootstrap.yml takes precedence over properties in application.yml.
 
 `application.yml/application.properties` file is specific to Spring Boot applications. Unless you change the location of external properties of an application, spring boot will always load application.yml from the following location:
 
@@ -337,12 +338,15 @@ When used with Spring Cloud clients (other than cloud config server), we need to
 
 [quote]
 ____
+. Delete `items-service/src/main/resources/application.yml`
 . Create `items-service/src/main/resources/bootstrap.yml`.
 . Add the fail fast property
 +
 [source,yml]
 ----
 spring:
+  application:
+    name: items-service
   cloud:
     config:
       fail-fast: true
@@ -354,6 +358,8 @@ spring:
 [source,yml]
 ----
 spring:
+  application:
+    name: items-service
   cloud:
     config:
       uri: http://localhost:7777
