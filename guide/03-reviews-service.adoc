@@ -32,7 +32,7 @@ ____
 . Add dependencies (search for them and select):
 .. Spring Data JPA
 .. Spring Web
-.. Config Client
+.. Spring Cloud Config Client
 .. Lombok
 .. Spring Boot Actuator
 .. H2 Database
@@ -142,7 +142,7 @@ mvn clean install -DskipTests
 ----
 +
 . Restart `config-server`
-. Verify that all looks good by accessing http://localhost:7777/reviews-service/default
+. Verify that all looks good by accessing `curl http://localhost:7777/reviews-service/default | jq`
 ____
 
 Next create the reviews-service's `bootstrap.yml` and add config for binding to the central `config-server`
@@ -262,7 +262,7 @@ Try to start the application now. You should be able to check the data via http:
 [source,sql]
 SELECT * FROM REVIEW
 
-Let's continue to with classes related to the REST-API.
+Let's continue with the classes related to the REST-API.
 
 ==== RestController class
 The purpose of this class is to provide a REST-API to the surrounding microservices environment.
@@ -350,6 +350,44 @@ ____
 
 The above class does not compile properly until we add the rest of the gang:
 
+==== ServiceUtil
+The `ReviewsServiceController` constructs a response containing an `ReviewDto`, into which the current service's address (hostname and port) is given via `serviceUtil.getServiceAddress()`. The `ServiceUtil.java` class is already available for use in the `util` module, so to get access to it, just add this dependency to `reviews-service/pom.xml`:
+
+[source,xml]
+----
+<dependencies>
+    ... (other dependencies omitted for brevity)
+
+    <dependency>
+        <groupId>com.acorn.tutorial</groupId>
+        <artifactId>util</artifactId>
+        <version>${project.version}</version>
+    </dependency>
+
+    ...
+</dependencies>
+----
+
+The above will bring in the `ServiceUtil` class we need. This class is annotated with `@Component`, but in order to make Spring detect the class so it can be autowired, we must add the annotation `@ComponentScan("com.acorn.tutorial")` to `items-service/com/acorn/tutorial/reviewsservice/ReviewsServiceApplication.java`:
+
+[source, java]
+----
+package com.acorn.tutorial.reviewsservice;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+@ComponentScan("com.acorn.tutorial")
+public class ReviewsServiceApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ReviewsServiceApplication.class, args);
+    }
+
+}
+----
+
 ==== ReviewDto
 The ReviewDto is just a POJO that represents the JSON structure to send out to callers of the REST API.
 
@@ -401,24 +439,6 @@ public class ReviewDto {
 }
 ----
 ____
-
-==== ServiceUtil
-The `ReviewsServiceController` constructs a response containing an `ReviewDto`, into which the current service's address (hostname and port) is given via `serviceUtil.getServiceAddress()`. The `ServiceUtil.java` class is already available for use in the `util` module, so to get access to it, just add this dependency to `reviews-service/pom.xml`:
-
-[source,xml]
-----
-<dependencies>
-    ... (other dependencies omitted for brevity)
-
-    <dependency>
-        <groupId>com.acorn.tutorial</groupId>
-        <artifactId>util</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-
-    ...
-</dependencies>
-----
 
 === Running the application
 You should be able to start the fully functional service using one of these two options.
