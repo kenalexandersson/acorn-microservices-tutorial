@@ -21,4 +21,6 @@ Here is the entry point to the tutorial we will do in the session
 [IMPORTANT]
 Do not start doing the tutorial in advance! Wait until you are physically seated in the classroom!
 
-<<guide/01-items-service.adoc#,Tutorial: Microservices>>
+Step one:: `git clone https://github.com/kenalexandersson/acorn-microservices-tutorial.git`
+
+Step two:: Cross the starting line: <<guide/01-items-service.adoc#,Tutorial: Microservices>>

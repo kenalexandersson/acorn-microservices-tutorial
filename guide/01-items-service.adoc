@@ -83,7 +83,7 @@ There are actually two ways to create projects via Spring initializr, we can do 
 [quote]
 ____
 . Right-click acorn-microservices-tutorial in the Project pane, select `New -> Module...`
-. Select `Spring Initializr`
+. Select `Spring Initializr` and click `Next`
 . In the Project Metadata dialog, enter the following fields:
 .. `Group:` com.acorn.tutorial
 .. `Artifact:` items-service
@@ -227,16 +227,32 @@ It also possible to check the health status of the app by accessing http://local
 }
 ----
 
-[NOTE]
+[TIP]
 ====
-If you have been glancing the log output, your keen eyes have probably noticed some things that perhaps raises questions. Like the application has been started with a Tomcat running on port 8080, that a JPA EntityManagerFactory has been initialized, and Hibnernate seems to be configured using the dialect org.hibernate.dialect.H2Dialect.
+From here on we will use `curl` together with `jq` when calling urls, for example:
+
+[source,bash]
+curl http://localhost:8080/actuator/health | jq
+
+Note that the response from curl is piped through `jq`, which is a lightweight JSON processor. It helps us formatting the output so it becomes more pleasant to the eye.
+
+Jq is easily installed:
+
+* Linux (Fedora, RHEL): `dnf install jq`
+* Linux (Ubuntu): `apt-get install jq`
+* macOs: `brew install jq`
+* Windows Cygwin: Search for `jq` in the Cygwin install manager
+
+If you cannot install jq, just run the curl commands without `"| jq"`, or use a web browser when applicable.
+====
+
+If you have been glancing the log output, your keen eyes have probably noticed some things that perhaps raises questions. Like the application has been started with a _Tomcat running on port 8080_, that a _JPA EntityManagerFactory_ has been initialized, and _Hibernate_ seems to be configured using the dialect _org.hibernate.dialect.H2Dialect_.
 
 What does all this come from, and why port 8080?
 
 The short answer is: Spring Boot relies heavily on the concept of convention over configuration. We did add a set of Maven dependencies that brings in JPA, Hibernate and H2 (in-memory) DB to the classpath. We didn't configure any of them, so Spring Boot starts them using _sensible_ default values. Port 8080 is also the default value used for Tomcat if nothing else is specified.
 
 This behavior can give Spring Boot an aura of _automagic_, things work even if you don't know why. This is something you may both love and hate (the latter when things go wrong), but it is convenient for quickly spinning up things. It is of course possible to define our own config, as we will do now.
-====
 
 === Configuring the Items Service application
 
@@ -569,20 +585,6 @@ ____
 This work pretty much sums it up. We now have our small and astoundingly simple microservice in place, ready to serve items to interested clients.
 
 Please start the application and verify that it works by using the below curl commands.
-
-[NOTE]
-====
-The below curl examples pipes the result through `jq`, which is a lightweight JSON processor. It helps us formatting the output.
-
-It is easily installed:
-
-* Linux (Fedora, RHEL): `dnf install jq`
-* Linux (Ubuntu): `apt-get install jq`
-* macOs: `brew install jq`
-* Windows Cygwin: Search for `jq` in the Cygwin install manager
-
-If you cannot install jq, just run below curl commands without `"| jq"`
-====
 
 * `curl http://localhost:8080/items | jq`
 * `curl http://localhost:8080/items/1 | jq`
