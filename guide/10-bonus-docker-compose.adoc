@@ -82,7 +82,7 @@ spring:
 [NOTE]
 When starting in `spring.profiles.active=docker` mode, each service will call the config server using the hostname `config-server` (instead of localhost). The actual name `config-server` will get defined in the `docker-compose.yml`, which we will create shortly.
 +
-. Add a new spring profile to each service, in each `yml` file under `config-server/src/main/resource/config` please add:
+. In `config-server/src/main/resource/config`, add a new spring profile to each `yml` file:
 +
 [source,yml]
 ----
@@ -227,6 +227,9 @@ ____
 
 === Run the whole application
 
+[IMPORTANT]
+If any services are running (via Intellij or command line), make sure to turn them off! Also remember to turn off the zipkin docker image, if running: `docker rm -f zipkin`
+
 With all above in place, we can now startup the complete application. The syntax for starting a composed docker environment:
 
 [source,bash]
@@ -257,6 +260,21 @@ Try it out by executing the REST-call
 
 [source,bash]
 curl http://localhost:20202/webapi/items/1 -u frank:abc | jq
+
+[WARNING]
+=====
+If you get a "Hystrix Readed time out" message, just try again.
+[source,json]
+----
+{
+"timestamp": "2020-01-02T15:33:26.563+0000",
+"status": 504,
+"error": "Gateway Timeout",
+"message": "com.netflix.zuul.exception.ZuulException: Hystrix Readed time out"
+}
+----
+
+=====
 
 .Example of result, note the value of field `serviceAddress`
 [source,json]
@@ -292,6 +310,8 @@ curl http://localhost:20202/webapi/items/1 -u frank:abc | jq
 }
 ----
 
+The `serviceAddress` shows containerId/IP as hostname, and then the port.
+
 It is fairly easy to spin up several instances of a service:
 
 [source,bash]
@@ -300,7 +320,7 @@ It is fairly easy to spin up several instances of a service:
 docker-compose up -d --scale items-service=2
 ----
 
-Try it out by calling the application again and notice how the `item.serviceAddress` changes when the client loadbalancer does its work.
+Try it out by calling the application again and notice how the _hostname_ (containerId/IP) in `item.serviceAddress` changes when the client loadbalancer does its work.
 
 Here are some more commands to try out:
 [source,bash]
