@@ -196,9 +196,6 @@ logging:
     ROOT: INFO
     org.hibernate.stat: INFO
     org.hibernate.type: INFO
-
-server:
-  port: 8080
 ----
 +
 . Make sure that the moved configuration is totally removed from `items-service/src/main/resources/application.yml`, it should now look like this:
@@ -208,6 +205,9 @@ server:
 spring:
   application:
     name: items-service
+
+server:
+  port: 8080
 ----
 ____
 
@@ -350,6 +350,9 @@ spring:
   cloud:
     config:
       fail-fast: true
+
+server:
+  port: 8080
 ----
 +
 . Restart the `items-service`. What happens?
@@ -364,6 +367,9 @@ spring:
     config:
       uri: http://localhost:7777
       fail-fast: true
+
+server:
+  port: 8080
 ----
 . Start the `items-service`.
 ____

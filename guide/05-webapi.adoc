@@ -198,6 +198,8 @@ The lombok annotation `@Value(staticConstructor = "of")` will create a private c
 +
 [source,java]
 ----
+package com.acorn.tutorial.webapi.web;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
@@ -211,13 +213,15 @@ public class Item {
 
     private String name;
 
-    private int port;
+    private String serviceAddress;
 }
 ----
 .. `webapi/src/main/java/com/acorn/tutorial/webapi/web/Review.java`
 +
 [source,java]
 ----
+package com.acorn.tutorial.webapi.web;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
@@ -241,7 +245,7 @@ public class Review {
 
     private String comment;
 
-    private int port;
+    private String serviceAddress;
 }
 ----
 ____

@@ -89,6 +89,12 @@ Check the value of _item.serviceAddress_ in JSON output
 +
 . Run `curl http://localhost:8100/webapi/items | jq` repeatedly. After ~30 seconds the loadbalancer should start alternating between port 8080 and 8085
 +
+.Example of output showing the port
+[source,bash]
+----
+"serviceAddress": "<hostname>/10.67.22.148:8085"
+----
++
 . Shutdown one of the instances
 +
 Run `curl http://localhost:8100/webapi/items | jq` again. You should immediately see that the loadbalancer falls back to using one port only.
@@ -249,7 +255,37 @@ public interface ReviewsClient {
 
 . Restart `webapi` and access `curl http://localhost:8100/webapi/items/1 | jq`
 +
-The resource should now return 200 OK again and a JSON response. Note the empty fallback _"items": null_.
+The resource should now return 200 OK again and a JSON response. Note the null fallback in `"item": null`.
++
+[source,json]
+----
+{
+  "item": null,
+  "reviews": [
+    {
+      "id": 2,
+      "type": "item",
+      "typeId": 1,
+      "rating": 3,
+      "ratingMin": 1,
+      "ratingMax": 5,
+      "comment": "The spoon works until you turn it upside down, then it becomes useless",
+      "serviceAddress": "ken-jeppesen/10.67.22.148:9090"
+    },
+    {
+      "id": 5,
+      "type": "item",
+      "typeId": 1,
+      "rating": 2,
+      "ratingMin": 1,
+      "ratingMax": 5,
+      "comment": "The one I got was completely flat",
+      "serviceAddress": "ken-jeppesen/10.67.22.148:9090"
+    }
+  ]
+}
+
+----
 +
 . Turn on one `items-service` instance again
 . Run `curl http://localhost:8100/webapi/items/1 | jq` repeatedly, after approximately 30 seconds the instance will be detected again and the items part will be back to normal.
