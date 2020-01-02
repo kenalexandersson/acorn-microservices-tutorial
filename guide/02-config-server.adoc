@@ -340,7 +340,7 @@ When used with Spring Cloud clients (other than cloud config server), we need to
 ____
 . Delete `items-service/src/main/resources/application.yml`
 . Create `items-service/src/main/resources/bootstrap.yml`.
-. Add the fail fast property
+. Add the needed spring application name and also configure the config client to fail fast if it cannot connect to config-server:
 +
 [source,yml]
 ----
