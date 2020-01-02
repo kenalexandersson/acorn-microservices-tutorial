@@ -540,6 +540,27 @@ The `ItemsServiceController` constructs a response containing an `ItemDto`, into
 </dependencies>
 ----
 
+The above will bring in the `ServiceUtil` class we need. This class is annotated with `@Component`, but in order to make Spring detect the class so it can be autowired, we must add the annotation `@ComponentScan("com.acorn.tutorial")` to `items-service/com/acorn/tutorial/itemsservice/ItemsServiceApplication.java`:
+
+[source, java]
+----
+package com.acorn.tutorial.itemsservice;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+
+@SpringBootApplication
+@ComponentScan("com.acorn.tutorial")
+public class ItemsServiceApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ItemsServiceApplication.class, args);
+    }
+
+}
+----
+
 ==== ItemNotFoundException and ItemNotFoundAdvice
 The final classes to add in order to get everything under control are the `ItemNotFoundException` class that is thrown when an `Item` cannot be found, and the `ItemNotFoundAdvice` class that will handle the exception and produce the appropriate response status code to send back to client.
 
@@ -563,6 +584,11 @@ ____
 +
 [source,java]
 ----
+package com.acorn.tutorial.itemsservice.web;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -572,11 +598,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class ItemNotFoundAdvice {
 
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    public ItemNotFoundAdvice(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @ResponseBody
     @ExceptionHandler(ItemNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String itemNotFoundHandler(ItemNotFoundException ex) {
-        return ex.getMessage();
+    public String itemNotFoundHandler(ItemNotFoundException ex) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(ex.getMessage());
     }
 }
 ----
