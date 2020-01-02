@@ -30,7 +30,7 @@ Well upon first look the _WebApi_ component is the entrance API for fetching inf
 === Backends For Frontends
 There is an architectural pattern known as Backends for Frontends (BFF) that our solution is influenced by. We will not deep dive into this pattern here, but the gist of it is as follows:
 
-Instead of providing a single general purpose API that is used by any type of client, like a _web application_ (written in React, Angular, Vue or whatever) or a _mobile client_ (iOS, Android), BFF is all about providing a tailored API for the web application, and another tailored API for the mobile client.
+Instead of providing a single general purpose API that is used by all types of clients, like a _web application_ (written in React, Angular, Vue or whatever) or a _mobile client_ (iOS, Android), BFF is all about providing a tailored API for the web application, and another tailored API for the mobile client.
 
 image::bff.png[]
 
@@ -57,18 +57,18 @@ A prerequisite for this to work is that each service during startup must automat
 === Road map
 Given the above musings, it makes sense to continue our implementation effort in this order.
 
-* Adding Service Discovery Server
+* Add a Service Discovery Server
 * Enable registering of existing `items-service` and `reviews-service` to registry
-* Create the WebApi component `webapi` which discovers the above services using the Service Discovery Server and then calls them
+* Create the WebApi component `webapi`, which discovers the items and reviews services by using the Service Discovery Server and then calls them
 
 == Service Discovery Server
 The idea behind a discovery server is to support a couple of central concepts.
 
-* Service Registration: The process of a service registering itself and it's location to the central registry. Usually it register it's host and port only, but can also provide arbitrary environment details if needed.
+* *Service Registration*: The process of a service registering itself and it's location to the central registry. Usually it register it's hostname and port only, but can also provide arbitrary environment details if needed.
 
-* Service Discovery: The process of a client fetching information from the central registry to get knowledge about locations of services.
+* *Service Discovery*: The process of a client fetching information from the central registry to get knowledge about service locations.
 
-Service instances are responsible for registering and deregistering themself with the service registry. Each service instance also sends heartbeat requests to prevent registration from expiring, which means that if heartbeats stops coming to the discovery server for a particular service, this service will eventually be removed.
+Service instances are responsible for registering and deregistering themself with the service registry. Each service instance also sends heartbeat requests to prevent registration from expiring, which means that if heartbeats from a particular service stops coming to the discovery server, then the service will eventually be removed.
 
 In this tutorial we are going use an implementation of Discovery Server named _Eureka_. Our next task is to create a project that uses it. When we are done with this section, there will be a Eureka instance up and running which `items-service` and `reviews-service` register themselves to.
 
