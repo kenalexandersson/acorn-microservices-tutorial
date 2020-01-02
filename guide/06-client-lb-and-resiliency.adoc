@@ -270,7 +270,7 @@ The resource should now return 200 OK again and a JSON response. Note the null f
       "ratingMin": 1,
       "ratingMax": 5,
       "comment": "The spoon works until you turn it upside down, then it becomes useless",
-      "serviceAddress": "ken-jeppesen/10.67.22.148:9090"
+      "serviceAddress": "<hostname>/10.67.22.148:9090"
     },
     {
       "id": 5,
@@ -280,7 +280,7 @@ The resource should now return 200 OK again and a JSON response. Note the null f
       "ratingMin": 1,
       "ratingMax": 5,
       "comment": "The one I got was completely flat",
-      "serviceAddress": "ken-jeppesen/10.67.22.148:9090"
+      "serviceAddress": "<hostname>/10.67.22.148:9090"
     }
   ]
 }
