@@ -38,7 +38,7 @@ ____
 .. `Group:` com.acorn.tutorial
 .. `Artifact:` webapi
 . Add dependencies (search for them and select):
-.. Config Client
+.. Spring Cloud Config Client
 .. Spring Web
 .. Spring Boot Actuator
 .. Lombok
@@ -317,7 +317,7 @@ ____
     </dependency>
 ----
 +
-. Enable OpenFeign by opening `webapi/src/main/java/com/acorn/tutorial/webapi/WebapiApplication.java` and adding `@EnableFeignClients`. Note that the base package `com.acorn.tutorial.webapi` is specified as well, meaning that classes under this package can be feign clients.
+. Enable OpenFeign by opening `webapi/src/main/java/com/acorn/tutorial/webapi/WebapiApplication.java` and adding `@EnableFeignClients("com.acorn.tutorial.webapi")`. Note that the base package `com.acorn.tutorial.webapi` is specified as well, meaning that classes under this package can be feign clients.
 +
 [source,java]
 ----
