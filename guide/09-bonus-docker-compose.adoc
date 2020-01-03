@@ -1,4 +1,4 @@
-= Spring Cloud
+= Containerization
 :toc: left
 :imagesdir: images
 
@@ -22,7 +22,7 @@ QA and testing::
 By containerizing the microservices it becomes easier to setup processes for integration, api and acceptance tests, like CI/CD pipelines and similar.
 
 Prepared for Kubernetes deployment::
-TODO: Add something here
+If we containerize our services, we are one step away to deploy them into a Kubernetes cluster. Kubernetes is a XXXXX, and it is becoming increasingly popular to deploy and run applications in this way. The topic of Kubernetes is however large enough for it's own tutorial, so we will not continue that discussion here.
 
 == Docker and Docker compose
 
