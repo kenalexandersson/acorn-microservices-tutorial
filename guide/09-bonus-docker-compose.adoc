@@ -376,3 +376,7 @@ docker-compose up
 The above command will start all services, and their log output will be seen directly. Pressing `Ctrl-C` will shutdown all containers.
 =====
 
+Here we are, finally, at the bottom of the pit, or at the top of the mountain, whichever you prefer. In fact, it is almost the end of the whole session. The last thing for us to do before we leave is to quickly summarize what we have been doing.
+
+<<10-end-of-the-road.adoc#,Wrapping it up>>
+

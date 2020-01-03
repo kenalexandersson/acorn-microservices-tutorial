@@ -57,7 +57,3 @@ By now you should hopefully have a clearer picture of the patterns around micros
 
 Just a final recommendation before you leave:
 http://lucasmatt.com/2017/08/22/spring-microservices/[Spring Cloud in 10 Bad Cartoons]
-
-== Bonus material
-
-Your hunger not yet stilled, having appetite for more? Then head on to the <<10-bonus-docker-compose.adoc#,bonus section>>!
