@@ -47,6 +47,7 @@ Previously in the tutorial we have started all services locally, on _localhost_.
 .Running directly on localhost, using ports to distinguish unique hostname:port combinations
 image::locally-run-services.png[]
 
+
 When we containerize the services and run them in Docker, each service will run in it's own container with a specific id (hostname) and an IP-address (internal to Docker). This means that if we start another instance of the same service, this will run in another container with another container id as hostname and another internal IP-address.
 
 .Running as docker containers, using container id to distinguish unique hostname:port combinations
