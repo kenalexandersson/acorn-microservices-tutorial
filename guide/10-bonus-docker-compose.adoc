@@ -10,21 +10,150 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
+== Intro
+This section will touch upon the concept of containerize microservices, or in other words, make them run in Docker. Doing so will give us a couple of benefits.
+
+Development ease::
+By now we do have a set of services (applications) that can be started independently, but they must be run together for the whole system to work. Although each service can be started as we have done so far, manually or via Intellij, seen from a development perspective this becomes rather cumbersome in the long run. In this tutorial we have pretty much worked on all services at once. During real development work it is probably more realistic to say that we work on a single service, but where we need the other ones up and running as well. At least when we test the integration locally between services, or when we need to verify that a service chain works as intended when we change something.
++
+What we need is a way to quickly spin all services up and down as we see fit, so we can focus on development work.
+
+QA and testing::
+By containerizing the microservices it becomes easier to setup processes for integration, api and acceptance tests, like CI/CD pipelines and similar.
+
+Prepared for Kubernetes deployment::
+a
+
 == Docker and Docker compose
 
 The description at https://docs.docker.com/compose/ sums it all up rather neatly:
 
 _"Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a YAML file to configure your application’s services. Then, with a single command, you create and start all the services from your configuration."_
 
-This means that `docker-compose` is a good fit for us since we by now do have a set of services (applications) that can be started independently, but they must be run together for the whole system to work. Although each service can be started as we have done so far, manually or via Intellij, seen from a development perspective this becomes rather cumbersome in the long run. Docker compose can help us by providing a quick way to spin things up.
+This means that `docker-compose` is a good fit for us since we do have a set of services that can be started independently, but they must be run together for the whole system to work.
 
-So, we can use `docker-compose`, but what do we need to do? Well, basically this:
+So what is needed to make `docker-compose` work? Well, basically this:
 
-. Each service must be containerized, which essentially means that a `Dockerfile` needs to be added for each service. Luckily, this file does not need to be very complex.
+. Each service must be containerized, which essentially means that a `Dockerfile` needs to be added for every service. Luckily, this file does not need to be very complex, and even better, the same content can be universally used for all services.
 
 . We must add a file `docker-compose.yml` where we define what makes up a complete application.
 
 . Run it.
+
+Good to know before we start::
+Previously in the tutorial we have started all services locally, on _localhost_. Since all services ran on the same machine, it was important to use different ports so they didn't conflict with each other. That became extra important when starting several instances of the same service (recall that we started `reviews-service` on localhost:9090 and localhost:9095, for example).
++
+.Running directly on localhost, using ports to distinguish unique hostname:port combinations
+[plantuml]
+----
+@startuml
+
+skinparam shadowing false
+
+frame localhost {
+
+    component localhost:7777 <<config-server>> as cs {
+    }
+    component localhost:8761 <<service-discovery-server>> as sds {
+    }
+    component localhost:20202 <<gateway>> as gateway {
+    }
+    component localhost:8080 <<webapi>> as webapi {
+    }
+    component localhost:8080 <<items-service>> as is {
+    }
+    component localhost:9090 <<reviews-service>> as rs {
+    }
+    component localhost:9411 <<zipkin>> as zipkin {
+    }
+
+    cs <~ gateway
+    cs <~ webapi
+    cs <~ is
+    cs <~ rs
+    cs <~ sds
+
+    sds <~ gateway
+    sds <~ webapi
+    sds <~ is
+    sds <~ rs
+
+    gateway --> webapi
+    webapi --> is
+    webapi --> rs
+
+    webapi ~> zipkin
+    is ~> zipkin
+    rs ~> zipkin
+}
+
+@enduml
+----
++
+When we containerize the services and run them in Docker, each service will run in it's own container with a specific id (hostname) and an IP-address (internal to Docker). This means that if we start another instance of the same service, this will run in another container with another container id as hostname and another internal IP-address.
++
+.Running as docker containers, using container id to distinguish unique hostname:port combinations
+[plantuml]
+----
+@startuml
+
+skinparam shadowing false
+
+frame localhost {
+
+    rectangle Docker {
+
+        node 364a23e:8080 <<config-server>> as cs {
+        }
+        node 987f02a:8080 <<service-discovery-server>> as sds {
+        }
+        node 274d57d:8080 <<gateway>> as gateway {
+        }
+        node 165a66c:8080 <<webapi>> as webapi {
+        }
+        node 427b75d:8080 <<items-service>> as is {
+        }
+        node 544e99d:8080 <<reviews-service>> as rs {
+        }
+        node 865f66b:9411 <<zipkin>> as zipkin {
+        }
+
+
+        interface 20202 as gateport
+        interface 9411 as zipport
+        interface 7777 as csport
+        interface 8761 as sdsport
+        interface 8761 as sdsport
+
+        gateway - gateport
+        zipkin -left- zipport
+
+        cs - csport
+        csport <~ gateway
+        csport <~ webapi
+        csport <~ is
+        csport <~ rs
+        csport <~ sds
+
+        sds - sdsport
+        sdsport <~ gateway
+        sdsport <~ webapi
+        sdsport <~ is
+        sdsport <~ rs
+
+        gateway --> webapi
+        webapi --> is
+        webapi --> rs
+
+        gateway ~> zipport
+        webapi ~> zipport
+        is ~> zipport
+        rs ~> zipport
+    }
+}
+
+@enduml
+----
 
 === Adding Dockerfile for each service
 
@@ -32,16 +161,7 @@ So, we can use `docker-compose`, but what do we need to do? Well, basically this
 [quote]
 ____
 
-. Start by adding an empty `Dockerfile` to these projects:
-+
-* `config-server/Dockerfile`
-* `gateway/Dockerfile`
-* `items-service/Dockerfile`
-* `reviews-service/Dockerfile`
-* `service-discovery-server/Dockerfile`
-* `webapi/Dockerfile`
-+
-. Add this content to each Dockerfile:
+. Start by creating a Dockerfile with this content:
 +
 [source,dockerfile]
 ----
@@ -54,8 +174,17 @@ ADD ./target/*.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
 ----
 +
+. Copy the `Dockerfile` to these projects:
++
+* `config-server/Dockerfile`
+* `gateway/Dockerfile`
+* `items-service/Dockerfile`
+* `reviews-service/Dockerfile`
+* `service-discovery-server/Dockerfile`
+* `webapi/Dockerfile`
++
 [NOTE]
-The dockerfile for each service exposes the same internal port, 8080. This will be mapped to each service's ordinary port later on in `docker-compose.yml`.
+The dockerfile for each service exposes the same internal port, 8080. Certain services will change the mapping to this port later on in `docker-compose.yml`.
 +
 . In the following files:
 
@@ -102,7 +231,7 @@ eureka:
       defaultZone: http://service-discovery-server:8761/eureka/
 ----
 +
-This means that if we start each service with `spring.profiles.active=docker`, they will startup using port 8080. Again, this will eventually be mapped to each service's ordinary port later on in `docker-compose.yml`.
+This means that if we start each service with `spring.profiles.active=docker`, they will startup using port 8080. Again, certain services will eventually remap this port later on in `docker-compose.yml`.
 ____
 
 === Adding docker-compose.yml
@@ -218,9 +347,9 @@ Worth noting here:
 
 * The `zipkin` service does not use `build`, instead it uses `image`, which means that `docker-compose` will pull that image and run it.
 
-* The `config-server`, `service-discovery-server` and `gateway` maps their respective ports to 8080 (7777:8080, 8761:8080 and 20202:8080), this because they all use a fixed port to which other services or browser connects.
+* The `config-server`, `service-discovery-server` and `gateway` maps their respective ports to 8080 (7777:8080, 8761:8080 and 20202:8080), this because they all use a fixed port to which other services or browser connects (they are not looked up via service discovery).
 
-* The `items-service`, `reviews-service` and `webapi` does not map any ports at all. Instead they uses `environment` to set the variable `SPRING_PROFILES_ACTIVE=docker` (yet another way to specify a spring boot profile). This will eventually startup the services using port 8080. Furthermore, these services will register themselves to `service-discovery-server` with their _hostname_ and port 8080. The actual hostname will be the container name or id given by Docker. So in short, the service discovery will be based on unique container names, which means that the ports can be 8080 for all services here, without any conflict.
+* The `items-service`, `reviews-service` and `webapi` does not map any ports at all. Instead they uses `environment` to set the variable `SPRING_PROFILES_ACTIVE=docker` (yet another way to specify a spring boot profile). This will eventually startup the services using port 8080, which we already exposed via the Dockerfile. Furthermore, these services will register themselves to `service-discovery-server` with their _hostname_ and port 8080. The actual hostname will be the container name or id given by Docker. So in short, the service discovery will be based on unique container names, which means that the ports can be 8080 for all services here, without any conflict.
 
 * `depends_on` is a way to specify the startup order of the containers. We obviously need the `config-server` and `service-discovery-server` up and running before the other containers start calling them.
 ____
@@ -228,25 +357,20 @@ ____
 === Run the whole application
 
 [IMPORTANT]
-If any services are running (via Intellij or command line), make sure to turn them off! Also remember to turn off the zipkin docker image, if running: `docker rm -f zipkin`
+====
+If any services are running (via Intellij or command line), make sure to turn them off! Also remember to turn off the zipkin docker image, if running.
 
-With all above in place, we can now startup the complete application. The syntax for starting a composed docker environment:
+`docker rm -f zipkin`
+====
 
-[source,bash]
-----
-docker-compose -f <compose-file.yml> up
-
-# If the <compose-file.yml> is named docker-compose.yml, this shourcut is enough
-docker-compose up
-----
-
-The above command will start all services, and their log output will be seen. Pressing `Ctrl-C` will shutdown all containers.
-
-It is possible to run the process in detached mode:
+With all above in place, we can now startup the complete application. It is possible to run the composed docker environment in detached mode:
 
 [source,bash]
 ----
 # Starting up in detached mode
+docker-compose -f <compose-file.yml> up -d
+
+# If the <compose-file.yml> is named docker-compose.yml, you don't need to specify the file
 docker-compose up -d
 
 # Tail the logs of all services
@@ -310,7 +434,7 @@ If you get a "Hystrix Readed time out" message, just try again.
 }
 ----
 
-The `serviceAddress` shows containerId/IP as hostname, and then the port.
+The `serviceAddress` shows containerId as hostname, followed by the IP-address and then the port.
 
 It is fairly easy to spin up several instances of a service:
 
@@ -320,7 +444,7 @@ It is fairly easy to spin up several instances of a service:
 docker-compose up -d --scale items-service=2
 ----
 
-Try it out by calling the application again and notice how the _hostname_ (containerId/IP) in `item.serviceAddress` changes when the client loadbalancer does its work.
+Try it out by calling the application again and notice how the _hostname_ and IP in `item.serviceAddress` changes when the client loadbalancer does its work.
 
 Here are some more commands to try out:
 [source,bash]
@@ -337,4 +461,19 @@ docker-compose up -d --scale items-service=2 --scale reviews-service=3
 # Shut down all services and remove containers
 docker-compose down
 ----
+
+[TIP]
+=====
+For completeness: The syntax for starting a composed docker environment in non-detached mode goes like this:
+
+[source,bash]
+----
+docker-compose -f <compose-file.yml> up
+
+# If the <compose-file.yml> is named docker-compose.yml, this shourcut is enough
+docker-compose up
+----
+
+The above command will start all services, and their log output will be seen directly. Pressing `Ctrl-C` will shutdown all containers.
+=====
 
