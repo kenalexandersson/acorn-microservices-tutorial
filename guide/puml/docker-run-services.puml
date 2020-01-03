@@ -21,7 +21,6 @@ frame localhost {
         node 865f66b:9411 <<zipkin>> as zipkin {
         }
 
-
         interface 20202 as gateport
         interface 9411 as zipport
         interface 7777 as csport
@@ -52,6 +51,14 @@ frame localhost {
         webapi ~> zipport
         is ~> zipport
         rs ~> zipport
+
+        note top of cs : ip:10.67.0.3
+        note top of sds : ip:10.67.0.4
+        note top of gateway : ip:10.67.0.5
+        note bottom of is : ip:10.67.0.6
+        note bottom of rs : ip:10.67.0.7
+        note bottom of zipkin : ip:10.67.0.8
+        note left of webapi : ip:10.67.0.9
     }
 }
 
