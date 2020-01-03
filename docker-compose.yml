@@ -85,6 +85,6 @@ services:
     image: openzipkin/zipkin
     mem_limit: 512m
     ports:
-    - "9411:9411"
+      - "9411:9411"
     environment:
       - STORAGE_TYPE=mem
