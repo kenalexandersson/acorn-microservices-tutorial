@@ -22,7 +22,7 @@ QA and testing::
 By containerizing the microservices it becomes easier to setup processes for integration, api and acceptance tests, like CI/CD pipelines and similar.
 
 Prepared for Kubernetes deployment::
-a
+TODO: Add something here
 
 == Docker and Docker compose
 
@@ -44,119 +44,14 @@ Good to know before we start::
 Previously in the tutorial we have started all services locally, on _localhost_. Since all services ran on the same machine, it was important to use different ports so they didn't conflict with each other. That became extra important when starting several instances of the same service (recall that we started `reviews-service` on localhost:9090 and localhost:9095, for example).
 +
 .Running directly on localhost, using ports to distinguish unique hostname:port combinations
-[plantuml]
-----
-@startuml
-
-skinparam shadowing false
-
-frame localhost {
-
-    component localhost:7777 <<config-server>> as cs {
-    }
-    component localhost:8761 <<service-discovery-server>> as sds {
-    }
-    component localhost:20202 <<gateway>> as gateway {
-    }
-    component localhost:8080 <<webapi>> as webapi {
-    }
-    component localhost:8080 <<items-service>> as is {
-    }
-    component localhost:9090 <<reviews-service>> as rs {
-    }
-    component localhost:9411 <<zipkin>> as zipkin {
-    }
-
-    cs <~ gateway
-    cs <~ webapi
-    cs <~ is
-    cs <~ rs
-    cs <~ sds
-
-    sds <~ gateway
-    sds <~ webapi
-    sds <~ is
-    sds <~ rs
-
-    gateway --> webapi
-    webapi --> is
-    webapi --> rs
-
-    webapi ~> zipkin
-    is ~> zipkin
-    rs ~> zipkin
-}
-
-@enduml
-----
+image::locally-run-services.png[]
 +
 When we containerize the services and run them in Docker, each service will run in it's own container with a specific id (hostname) and an IP-address (internal to Docker). This means that if we start another instance of the same service, this will run in another container with another container id as hostname and another internal IP-address.
 +
 .Running as docker containers, using container id to distinguish unique hostname:port combinations
-[plantuml]
-----
-@startuml
-
-skinparam shadowing false
-
-frame localhost {
-
-    rectangle Docker {
-
-        node 364a23e:8080 <<config-server>> as cs {
-        }
-        node 987f02a:8080 <<service-discovery-server>> as sds {
-        }
-        node 274d57d:8080 <<gateway>> as gateway {
-        }
-        node 165a66c:8080 <<webapi>> as webapi {
-        }
-        node 427b75d:8080 <<items-service>> as is {
-        }
-        node 544e99d:8080 <<reviews-service>> as rs {
-        }
-        node 865f66b:9411 <<zipkin>> as zipkin {
-        }
-
-
-        interface 20202 as gateport
-        interface 9411 as zipport
-        interface 7777 as csport
-        interface 8761 as sdsport
-        interface 8761 as sdsport
-
-        gateway - gateport
-        zipkin -left- zipport
-
-        cs - csport
-        csport <~ gateway
-        csport <~ webapi
-        csport <~ is
-        csport <~ rs
-        csport <~ sds
-
-        sds - sdsport
-        sdsport <~ gateway
-        sdsport <~ webapi
-        sdsport <~ is
-        sdsport <~ rs
-
-        gateway --> webapi
-        webapi --> is
-        webapi --> rs
-
-        gateway ~> zipport
-        webapi ~> zipport
-        is ~> zipport
-        rs ~> zipport
-    }
-}
-
-@enduml
-----
+image::docker-run-services.png[]
 
 === Adding Dockerfile for each service
-
 
 [quote]
 ____

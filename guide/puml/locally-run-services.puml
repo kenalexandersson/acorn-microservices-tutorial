@@ -1,0 +1,42 @@
+@startuml
+
+skinparam shadowing false
+
+frame localhost {
+
+    component localhost:7777 <<config-server>> as cs {
+    }
+    component localhost:8761 <<service-discovery-server>> as sds {
+    }
+    component localhost:20202 <<gateway>> as gateway {
+    }
+    component localhost:8080 <<webapi>> as webapi {
+    }
+    component localhost:8080 <<items-service>> as is {
+    }
+    component localhost:9090 <<reviews-service>> as rs {
+    }
+    component localhost:9411 <<zipkin>> as zipkin {
+    }
+
+    cs <~ gateway
+    cs <~ webapi
+    cs <~ is
+    cs <~ rs
+    cs <~ sds
+
+    sds <~ gateway
+    sds <~ webapi
+    sds <~ is
+    sds <~ rs
+
+    gateway --> webapi
+    webapi --> is
+    webapi --> rs
+
+    webapi ~> zipkin
+    is ~> zipkin
+    rs ~> zipkin
+}
+
+@enduml

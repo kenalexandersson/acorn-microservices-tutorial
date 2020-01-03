@@ -1,0 +1,58 @@
+@startuml
+
+skinparam shadowing false
+
+frame localhost {
+
+    rectangle Docker {
+
+        node 364a23e:8080 <<config-server>> as cs {
+        }
+        node 987f02a:8080 <<service-discovery-server>> as sds {
+        }
+        node 274d57d:8080 <<gateway>> as gateway {
+        }
+        node 165a66c:8080 <<webapi>> as webapi {
+        }
+        node 427b75d:8080 <<items-service>> as is {
+        }
+        node 544e99d:8080 <<reviews-service>> as rs {
+        }
+        node 865f66b:9411 <<zipkin>> as zipkin {
+        }
+
+
+        interface 20202 as gateport
+        interface 9411 as zipport
+        interface 7777 as csport
+        interface 8761 as sdsport
+        interface 8761 as sdsport
+
+        gateway - gateport
+        zipkin -left- zipport
+
+        cs - csport
+        csport <~ gateway
+        csport <~ webapi
+        csport <~ is
+        csport <~ rs
+        csport <~ sds
+
+        sds - sdsport
+        sdsport <~ gateway
+        sdsport <~ webapi
+        sdsport <~ is
+        sdsport <~ rs
+
+        gateway --> webapi
+        webapi --> is
+        webapi --> rs
+
+        gateway ~> zipport
+        webapi ~> zipport
+        is ~> zipport
+        rs ~> zipport
+    }
+}
+
+@enduml
