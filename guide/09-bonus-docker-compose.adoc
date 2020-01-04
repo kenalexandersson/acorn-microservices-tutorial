@@ -11,7 +11,7 @@ ifdef::env-github[]
 endif::[]
 
 == Intro
-This section will touch upon the concept of containerize microservices, or in other words, make them run in Docker. Doing so will give us a couple of benefits.
+This section will touch upon the concept of containerizing microservices, or in other words, make them run in Docker. Doing so will give us a couple of benefits.
 
 Development ease::
 By now we do have a set of services (applications) that can be started independently, but they must be run together for the whole system to work. Although each service can be started as we have done so far, manually or via Intellij, seen from a development perspective this becomes rather cumbersome in the long run. In this tutorial we have pretty much worked on all services at once. During real development work it is probably more realistic to say that we work on a single service, but where we need the other ones up and running as well. At least when we test the integration locally between services, or when we need to verify that a service chain works as intended when we change something.
