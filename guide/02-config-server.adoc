@@ -211,7 +211,7 @@ server:
 ----
 ____
 
-Just moving the configuration to the `config-server` is not enough. The `items-service` component must be setup so it can bind to the `config-server` to get hold of the configuration. This is done by making the `items-services` into a Spring Cloud Config Client, which is done by adding a maven-dependency.
+Just moving the configuration to the `config-server` is not enough. The `items-service` component must be setup so it can bind to the `config-server` to be able to fetch the configuration. This is done by turning the `items-services` into a _Spring Cloud Config Client_, which is done by adding a maven-dependency.
 
 [quote]
 ____
@@ -296,16 +296,7 @@ The `items-service` application should now start with config loaded from `config
 === Overriding default setup
 Up until now we have relied on the automagical means of setting up the `config-server` and having a client app using it. Our client `items-service` uses the default uri https://localhost:8888 to fetch config.
 
-But what if we can't run the server on the default port, or if we want to change how the client acts in other ways?
-
-[NOTE]
-====
-The default behavior for any application that has the Spring Cloud Config Client on the classpath is as follows: When a config client starts, it binds to the Config Server (through the `spring.cloud.config.uri` bootstrap configuration property, which defaults to "http://localhost:8888") and initializes Spring Environment with remote property sources.
-
-The net result of this behavior is that all client applications that want to consume the Config Server need a _bootstrap.yml_ (or an environment variable) with the server address set in `spring.cloud.config.uri`.
-====
-
-Let's take a look at this by changing the port of the `config-server`.
+But what if we can't run the server on the default port, or if we want to change how the client acts in other ways? Let's take a look at this by changing the port of the `config-server`.
 
 [quote]
 ____
@@ -315,9 +306,10 @@ ____
 . Restart the `items-service`. Expect to see a connection error log since the service tries to connect to port 8888.
 ____
 
-What's this about file _bootstrap.yml_ instead of application.yml? Well bootstrap.yml is used in Spring Cloud for loading properties in to a parent application context. Technically, bootstrap.yml is loaded by a parent Spring ApplicationContext. That parent ApplicationContext is loaded before the one that uses application.yml, i.e. properties in bootstrap.yml takes precedence over properties in application.yml.
+What's all this about using a file _bootstrap.yml_ instead of an _application.yml_? Well bootstrap.yml is used in Spring Cloud for loading properties into a _parent application context_. That _parent application context_ is loaded _before_ the ordinary _Spring application context_, which uses application.yml. This means that properties defined in bootstrap.yml takes precedence over properties defined in application.yml.
 
-`application.yml/application.properties` file is specific to Spring Boot applications. Unless you change the location of external properties of an application, spring boot will always load application.yml from the following location:
+application.yml or application.properties::
+The `application.yml or application.properties` file is specific to Spring Boot applications. Unless you change the location of external properties of an application, spring boot will always load application.yml from the following location:
 
 ----
 /src/main/resources/application.yml
@@ -325,16 +317,22 @@ What's this about file _bootstrap.yml_ instead of application.yml? Well bootstra
 
 You can store all the external properties for your application in this file. Common properties that are available in any Spring Boot project can be found at: https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html You can customize these properties as per your application needs.
 
-`bootstrap.yml/bootstrap.properties` on the other hand is specific to spring-cloud-config and is loaded before the application.yml
-
-bootstrap.yml is only needed if you are using Spring Cloud and your microservice configuration is stored on a remote Spring Cloud Config Server.
-
+bootstrap.yml or bootstrap.properties::
+The `bootstrap.yml or bootstrap.properties` file on the other hand is specific to spring-cloud-config and is loaded before the application.yml.
++
+Here is the take-away: *bootstrap.yml is only needed if you are using Spring Cloud and your microservice configuration is stored on a remote Spring Cloud Config Server*.
++
 [IMPORTANT]
 ====
 When using bootstrap.yml with Spring Cloud Config server, you shall specify the application-name and other cloud.config.server properties, similar to what we already do in `config-server/src/main/resources/bootstrap.yml`
 
-When used with Spring Cloud clients (other than cloud config server), we need to specify the application name and the location of config server (if not using the default http://localhost:8888)-
+When used with Spring Cloud clients (other than cloud config server), we need to specify the application name and the location of config server (if not using the default http://localhost:8888)
 ====
+
+The default behavior for any application that has the _Spring Cloud Config Client_ on classpath is as follows: When a config client starts, it binds to the `config-server` (through the `spring.cloud.config.uri` bootstrap configuration property, which defaults to "http://localhost:8888") and then initializes it's own Spring Environment with property sources found on the `config-server`.
+
+When we have changed the `config-server` to use port 7777 instead of the default, we also need to mirror this in the configuration of our clients. All client applications that want to consume content from the `config-sever` also need a `bootstrap.yml` (or an environment variable) where they specify the property `spring.cloud.config.uri=http://localhost:7777`.
+
 
 [quote]
 ____
