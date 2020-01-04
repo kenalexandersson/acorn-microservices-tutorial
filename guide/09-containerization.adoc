@@ -14,7 +14,9 @@ endif::[]
 This section will touch upon the concept of containerizing microservices, or in other words, make them run in Docker. Doing so will give us a couple of benefits.
 
 Development ease::
-By now we do have a set of services (applications) that can be started independently, but they must be run together for the whole system to work. Although each service can be started as we have done so far, manually or via Intellij, seen from a development perspective this becomes rather cumbersome in the long run. In this tutorial we have pretty much worked on all services at once. During real development work it is probably more realistic to say that we work on a single service, but where we need the other ones up and running as well. At least when we test the integration locally between services, or when we need to verify that a service chain works as intended when we change something.
+By now we do have a set of services that can be started independently, but they must be run together for the whole application to work. Although each service can be started as we have done so far, manually or via Intellij, seen from a development perspective this becomes rather cumbersome in the long run.
++
+In this tutorial we have pretty much worked on all services at once. During real development work it is probably more realistic to say that we work on a single service, but where we need the other ones up and running as well. At least when we test the integration locally between services, or when we need to verify that a service chain works as intended when we change something.
 +
 What we need is a way to quickly spin all services up and down as we see fit, so we can focus on development work.
 
@@ -30,7 +32,7 @@ The description at https://docs.docker.com/compose/ sums it all up rather neatly
 
 _"Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a YAML file to configure your application’s services. Then, with a single command, you create and start all the services from your configuration."_
 
-This means that `docker-compose` is a good fit for us since we do have a set of services that can be started independently, but they must be run together for the whole system to work.
+This means that `docker-compose` is a good fit for us since we do have a set of services that can be started independently, but which must be run together.
 
 So what is needed to make `docker-compose` work? Well, basically this:
 
