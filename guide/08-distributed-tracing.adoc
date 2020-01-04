@@ -176,5 +176,5 @@ This marks the end of the tracing example. Good work! By now we have a covered t
 
 But isn't it a hassle to manage all the services during development, like starting things up and down and off and on (and right to left)? Can we do something about that? Well yes, lets head on to:
 
-<<09-bonus-docker-compose.adoc#,Nextup: Containerization>>
+<<09-containerization.adoc#,Nextup: Containerization>>
 

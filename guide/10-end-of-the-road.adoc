@@ -50,7 +50,10 @@ Let us do a brief recapitulation before we close the session. This is what we di
 |We added a gateway component that acted as a proxy. A filter made sure that clients could not be routed to other services than we allowed. It is common to let the gateway also handle authentication, which we tried by using _basic auth_.
 
 |Enabled tracing information to be able to track a request
-|Finally we added tracing capabilities so we could keep track of the path a request to the system took. This can be used with tools like _Zipkin_.
+|Tracing capabilities were added so we could keep track of the path a request to the system took. This can be used with tools like _Zipkin_, and also for leveraging central logging.
+
+|Containerized our services
+|Finally we used Docker and docker-compose for running the microservices in a more orchestrated fashion.
 |===
 
 By now you should hopefully have a clearer picture of the patterns around microservices and why they are needed. There is of course a lot more to dig into in this field of expertise, like _central logging_, _metrics_, tools like _Istio_ and _Kubernetes_ and more, but that is a topic for future sessions.
