@@ -39,9 +39,6 @@ Netbeans:: https://projectlombok.org/setup/netbeans
 === Install Maven
 You will need Maven (a build and dependency management tool) during the tutorial. Please download and install through https://maven.apache.org/download.cgi
 
-Chrome:: https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=sv[Chrome JSON formatter]
-Firefox:: Newer versions of Firefox, from version 53 and onwards, have a JSON viewer incorporated by default.
-
 === Docker
 If you have Docker installed on your system, then please download this image:
 [source,bash]
