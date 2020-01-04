@@ -39,9 +39,6 @@ Netbeans:: https://projectlombok.org/setup/netbeans
 === Install Maven
 You will need Maven (a build and dependency management tool) during the tutorial. Please download and install through https://maven.apache.org/download.cgi
 
-=== JSON viewer plugin for web browser
-The output from the running application will be on JSON format, so make sure that your browser can present it somewhat better than just a one line text blob.
-
 Chrome:: https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=sv[Chrome JSON formatter]
 Firefox:: Newer versions of Firefox, from version 53 and onwards, have a JSON viewer incorporated by default.
 

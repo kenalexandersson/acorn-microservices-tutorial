@@ -21,21 +21,34 @@ image::schematic-overview.png[]
 
 We are going to build a set of Java https://spring.io/projects/spring-boot[Spring Boot] components using https://spring.io/projects/spring-cloud[Spring Cloud] tools. Some of these components will implement common microservices patterns used in distributed systems, these are hence of a more supportive nature.
 
-Config Server:: The Config server's responsibility is to be the configuration central for all other components.
 
-Gateway:: The Gateway is the single point entrance to the outside world. Clients from the outside must go through the Gateway to access the inner services. A key role of the Gateway is to route incoming requests to the right service.
+|===
+|Component |Description |Type
 
-Service Discovery and Client Loadbalancer:: All services in the application will register to Service Discovery server. This allow Spring Cloud components to automatically find each other. The Client Load Balancer will help in evenly distributing requests to multiple running instances of the same microservice.
+|Config Server
+|The Config server's responsibility is to be the configuration central for all other components.
+|Supportive
 
-Along with the above we also need microservices that takes the role as our business components, the ones serving data that clients are interested in.
+|Gateway
+|The Gateway is the single point entrance to the outside world. Clients from the outside must go through the Gateway to access the inner services. A key role of the Gateway is to route incoming requests to the right service.
+|Supportive
 
-Items Service:: This service is responsible for handling _items_. It stores items and can retrieve information about items on demand.
+|Service Discovery and Client Loadbalancer
+|All services in the application will register to Service Discovery server. This allow Spring Cloud components to automatically find each other. The Client Load Balancer will help in evenly distributing requests to multiple running instances of the same microservice.
+|Supportive
 
-Reviews Service:: Manages customer _reviews_ regarding _items_. It stores reviews and can retrieve information about reviews on demand.
+|Items Service
+|This service is responsible for handling _items_. It stores items and can retrieve information about items on demand.
+|Business component
 
-Web API:: Acts as an aggregating API, it knows what services to call in order to aggregate certain information (in our case from _items service_ and _reviews service_).
+|Reviews Service
+|Manages customer _reviews_ regarding _items_. It stores reviews and can retrieve information about reviews on demand.
+|Business component
 
-
+|Web API
+|Acts as an aggregating API, it knows what services to call in order to aggregate certain information (in our case from _items service_ and _reviews service_).
+|Business component
+|===
 
 We will explain more about each component when we start working on them, but before getting started with that, there is something to be said about _Maven_ and also _Spring Initializr_
 
