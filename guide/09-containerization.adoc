@@ -87,6 +87,18 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 [NOTE]
 The dockerfile for each service exposes the same internal port, 8080. Certain services will change the mapping to this port later on in `docker-compose.yml`.
 +
+. Open `config-server/src/main/resources/boostrap.yml` and add this _docker_ profile at the end of the file
++
+[source,yml]
+----
+---
+spring:
+  profiles: docker
+
+server:
+  port: 8080
+----
++
 . In the following files:
 
 * `service-discovery-server/bootstrap.yml`
@@ -105,7 +117,7 @@ spring:
 
   cloud:
     config:
-      uri: http://config-server:7777
+      uri: http://config-server:8080
       fail-fast: true
 ----
 +
@@ -129,7 +141,7 @@ server:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://service-discovery-server:8761/eureka/
+      defaultZone: http://service-discovery-server:8080/eureka/
 ----
 +
 This means that if we start each service with `spring.profiles.active=docker`, they will startup using port 8080. Again, certain services will eventually remap this port later on in `docker-compose.yml`.
@@ -156,13 +168,13 @@ services:
     mem_limit: 350m
     ports:
       - "7777:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=native
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://config-server:7777/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://config-server:8080/actuator/health"]
       interval: 5s
       timeout: 5s
       retries: 10
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,native
 
   service-discovery-server:
     build: service-discovery-server
@@ -173,7 +185,7 @@ services:
     ports:
       - "8761:8080"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://service-discovery-server:8761/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://service-discovery-server:8080/actuator/health"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -188,6 +200,11 @@ services:
         condition: service_healthy
       service-discovery-server:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://items-service:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     environment:
       - SPRING_PROFILES_ACTIVE=docker
 
@@ -199,6 +216,11 @@ services:
         condition: service_healthy
       service-discovery-server:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://reviews-service:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     environment:
       - SPRING_PROFILES_ACTIVE=docker
 
@@ -210,6 +232,11 @@ services:
         condition: service_healthy
       service-discovery-server:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://webapi:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     environment:
       - SPRING_PROFILES_ACTIVE=docker
 
@@ -223,19 +250,19 @@ services:
         condition: service_healthy
     ports:
       - "20202:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker,localauth
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:20202/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://gateway:8080/actuator/health"]
       interval: 5s
       timeout: 5s
       retries: 10
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,localauth
 
   zipkin:
     image: openzipkin/zipkin
     mem_limit: 512m
     ports:
-    - "9411:9411"
+      - "9411:9411"
     environment:
       - STORAGE_TYPE=mem
 ----
@@ -288,17 +315,37 @@ curl http://localhost:20202/webapi/items/1 -u frank:abc | jq
 
 [WARNING]
 =====
-If you get a "Hystrix Readed time out" message, just try again.
+If you get this error message
+
 [source,json]
 ----
 {
-"timestamp": "2020-01-02T15:33:26.563+0000",
-"status": 504,
-"error": "Gateway Timeout",
-"message": "com.netflix.zuul.exception.ZuulException: Hystrix Readed time out"
+  "timestamp": "2020-01-05T13:40:20.096+0000",
+  "status": 500,
+  "error": "Internal Server Error",
+  "message": "GENERAL"
 }
 ----
 
+then wait ~ 30 seconds and try again (so that Ribbon kicks in - the settings must be fine tuned to avoid this delay, but I haven't had time to address it yet).
+
+This log should pop up after approximately 30 seconds, when it does, try calling again.
+[source,bash]
+----
+gateway_1                   | 2020-01-07 15:17:08.439  INFO [gateway,,,] 1 --- [erListUpdater-0] c.netflix.config.ChainedDynamicProperty  : Flipping property: webapi.ribbon.ActiveConnectionsLimit to use NEXT property: niws.loadbalancer.availabilityFilteringRule.activeConnectionsLimit = 2147483647
+----
+
+If you then get a 504 like the below, just retry again.
+
+[source,json]
+----
+{
+  "timestamp": "2020-01-02T15:33:26.563+0000",
+  "status": 504,
+  "error": "Gateway Timeout",
+  "message": "com.netflix.zuul.exception.ZuulException: Hystrix Readed time out"
+}
+----
 =====
 
 .Example of result, note the value of field `serviceAddress`
