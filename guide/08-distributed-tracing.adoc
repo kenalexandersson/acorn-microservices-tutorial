@@ -16,7 +16,13 @@ One of the problems developers encounter as their microservice apps grow, is how
 
 Distributed Tracing is crucial for troubleshooting and understanding microservices. It is very useful when we need to track the request passing through multiple microservices. Distributed Tracing can be also be used to measure the performance of the microservices.
 
-https://spring.io/projects/spring-cloud-sleuth[Spring Cloud Sleuth] is meant to help with this. It introduces unique IDs to your logging which are consistent between microservice calls. This makes it possible to find how a single request travels from one microservice to the next.
+In distributed tracing, a single _trace_ contains a series of tagged time intervals called _spans_. A span can be thought of as a single unit of work. Spans have a start and end time, and optionally may include other metadata like logs or tags that can help classify “what happened.” Spans have relationships between one another, including parent-child relationships, which are used to show the specific path a particular request takes through the numerous services or components that make up the application.
+
+* *Trace* - represents an end-to-end request; made up of single or multiple spans
+* *Span* - represents work done by a single-service with time intervals and associated metadata; the building blocks of a trace
+* *Tag* - metadata to help contextualize a span
+
+https://spring.io/projects/spring-cloud-sleuth[Spring Cloud Sleuth] lets us add tracing capabilities. It introduces unique ID:s for traces and spans which are consistent between microservice calls. This makes it possible to find out how a single request travels from one microservice to the next.
 
 === Adding Sleuth tracing
 To add Sleuth tracing to our applications, we need to follow these steps.
