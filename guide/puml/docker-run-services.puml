@@ -4,62 +4,71 @@ skinparam shadowing false
 
 frame localhost {
 
+    agent client <<localhost:20202>> as gatewayclient
+    agent client <<localhost:7777>> as csclient
+    agent client <<localhost:8761>> as sdsclient
+    agent client <<localhost:9411>> as zipclient
+
     rectangle Docker {
 
-        node 364a23e:8080 <<config-server>> as cs {
+        node config-server <<364a23e:8080>> as cs {
         }
-        node 987f02a:8080 <<service-discovery-server>> as sds {
+        node service-discovery-server <<987f02a:8080>> as sds {
         }
-        node 274d57d:8080 <<gateway>> as gateway {
+        node gateway <<274d57d:8080>> as gateway {
         }
-        node 165a66c:8080 <<webapi>> as webapi {
+        node webapi <<165a66c:8080>> as webapi {
         }
-        node 427b75d:8080 <<items-service>> as is {
+        node items-service <<427b75d:8080>> as is {
         }
-        node 544e99d:8080 <<reviews-service>> as rs {
+        node reviews-service <<544e99d:8080>> as rs {
         }
-        node 865f66b:9411 <<zipkin>> as zipkin {
+        node zipkin <<865f66b:9411>> as zipkin {
         }
 
         interface 20202 as gateport
-        interface 9411 as zipport
         interface 7777 as csport
         interface 8761 as sdsport
-        interface 8761 as sdsport
+        interface 9411 as zipport
 
         gateway - gateport
         zipkin -left- zipport
 
         cs - csport
-        csport <~ gateway
-        csport <~ webapi
-        csport <~ is
-        csport <~ rs
-        csport <~ sds
+        cs <~ gateway
+        cs <~ webapi
+        cs <~ is
+        cs <~ rs
+        cs <~ sds
 
         sds - sdsport
-        sdsport <~ gateway
-        sdsport <~ webapi
-        sdsport <~ is
-        sdsport <~ rs
+        sds <~ gateway
+        sds <~ webapi
+        sds <~ is
+        sds <~ rs
 
         gateway --> webapi
         webapi --> is
         webapi --> rs
 
-        gateway ~> zipport
-        webapi ~> zipport
-        is ~> zipport
-        rs ~> zipport
+        gateway ~> zipkin
+        webapi ~> zipkin
+        is ~> zipkin
+        rs ~> zipkin
 
-        note top of cs : ip:10.67.0.3
-        note top of sds : ip:10.67.0.4
-        note top of gateway : ip:10.67.0.5
-        note bottom of is : ip:10.67.0.6
-        note bottom of rs : ip:10.67.0.7
-        note bottom of zipkin : ip:10.67.0.8
-        note left of webapi : ip:10.67.0.9
+        note top of cs : ip:172.67.0.3
+        note top of sds : ip:172.67.0.4
+        note top of gateway : ip:172.67.0.5
+        note bottom of is : ip:172.67.0.6
+        note bottom of rs : ip:172.67.0.7
+        note bottom of zipkin : ip:172.67.0.8
+        note left of webapi : ip:172.67.0.9
     }
+
+    gatewayclient -up-> gateport
+    csclient --> csport
+    sdsclient -left-> sdsport
+    zipclient -up-> zipport
 }
 
 @enduml

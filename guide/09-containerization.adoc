@@ -52,7 +52,7 @@ _Diagram 1: Running directly on localhost, using ports to distinguish unique hos
 
 When we containerize the services and run them in Docker, each service will run in it's own container with a specific id (hostname) and an IP-address (internal to Docker). This means that if we start another instance of the same service, this will run in another container with another container id as hostname and another internal IP-address. In this case we don't need to rely on ports for uniqueness.
 
-We will therefore change so that applications in containers always uses port 8080. When running `docker-compose` all services will be available via their hostname/ip-address. Some services will expose other ports than 8080, for example the _gateway_, which will expose 20202 as usual (so clients can reach it).
+We will therefore change so that applications in containers always uses port 8080. When running `docker-compose` all services will be available via their hostname/ip-address inside the docker environment. Some services will expose ports to the outside (i.e. to our localhost), as for example the _gateway_, which will expose 20202 as usual (so clients outside the docker environment can reach it).
 
 image::docker-run-services.png[]
 _Diagram 2: Running as docker containers, using container id to distinguish unique hostname:port combinations_
@@ -85,7 +85,7 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 * `webapi/Dockerfile`
 +
 [NOTE]
-The dockerfile for each service exposes the same internal port, 8080. Certain services will change the mapping to this port later on in `docker-compose.yml`.
+The dockerfile for each service exposes the same internal port, 8080.
 +
 . Open `config-server/src/main/resources/boostrap.yml` and add this _docker_ profile at the end of the file
 +
@@ -144,7 +144,7 @@ eureka:
       defaultZone: http://service-discovery-server:8080/eureka/
 ----
 +
-This means that if we start each service with `spring.profiles.active=docker`, they will startup using port 8080. Again, certain services will eventually remap this port later on in `docker-compose.yml`.
+This means that if we start each service with `spring.profiles.active=docker`, they will startup using port 8080.
 ____
 
 === Adding docker-compose.yml
@@ -269,17 +269,19 @@ services:
 +
 Worth noting here:
 
-* The root `services` has several childs, one for each of our microservices. Each service will get the name specified here, the container of `config-server` will be named _config-server_, and so on.
+* The root `services` has several childs, one for each of our microservices. Each service will get the name specified here, the container of `config-server` will be named _config-server_, and so on. This will also act as the hostname internally in the docker environment.
 
-* The `build` attribute points to each service root directory, in which a `Dockerfile` exist. So if `build` is used, `docker-compose` will build a docker image (if it does not already exist, or if it has been changed).
+* The `build` attribute points to each service root directory, in which a `Dockerfile` exist. So if `build` is used, `docker-compose` will build a docker image (if it does not already exist).
 
 * The `zipkin` service does not use `build`, instead it uses `image`, which means that `docker-compose` will pull that image and run it.
 
-* The `config-server`, `service-discovery-server` and `gateway` maps their respective ports to 8080 (7777:8080, 8761:8080 and 20202:8080), this because they all use a fixed port to which other services or browser connects (they are not looked up via service discovery).
+* The `config-server`, `service-discovery-server`, `gateway` and `zipkin` maps their respective ports to 8080 (7777:8080, 8761:8080, 20202:8080 and 9411:8080) to the outside world. This allows us to connect via browsers or other clients by using _http://localhost:nnnn_. We are for example interested to still see the Eureka UI at http://localhost:8761, and also being able to access the application as usual from http://localhost:20202/webapi/items
 
-* The `items-service`, `reviews-service` and `webapi` does not map any ports at all. Instead they uses `environment` to set the variable `SPRING_PROFILES_ACTIVE=docker` (yet another way to specify a spring boot profile). This will eventually startup the services using port 8080, which we already exposed via the Dockerfile. Furthermore, these services will register themselves to `service-discovery-server` with their _hostname_ and port 8080. The actual hostname will be the container name or id given by Docker. So in short, the service discovery will be based on unique container names, which means that the ports can be 8080 for all services here, without any conflict.
+* All services except `zipkin` do startup with the profile _docker_ activated, this is done by using `environment` to set the variable `SPRING_PROFILES_ACTIVE=docker` (yet another way to specify a spring boot profile). This will eventually startup the services using port 8080, which we already exposed via the Dockerfile. Furthermore, these services will register themselves to `service-discovery-server` with their _hostname_ and port 8080. The actual hostname will be the container name or id given by Docker. So in short, the service discovery will be based on unique container names, which means that the ports can be 8080 for all services here, without any conflict.
 
 * `depends_on` is a way to specify the startup order of the containers. We obviously need the `config-server` and `service-discovery-server` up and running before the other containers start calling them.
+
+* `healthcheck` allows for configuring a check that’s run to determine whether or not containers for this service are “healthy”. Is used in conjunction with `depends_on.<service_name>.condition: service_healthy` (for an example, see section `items-service`).
 ____
 
 === Run the whole application
@@ -307,6 +309,19 @@ docker-compose logs -f
 # Tail the logs of a single service
 docker-compose logs -f items-service
 ----
+
+[IMPORTANT]
+====
+If images have been built and source code is changed afterwards, then it is important to rebuild the application as well as forcibly build the docker images anew.
+
+[source, bash]
+----
+mvn clean install && docker-compose build
+
+# Alternatively
+mvn clean install && docker-compose up -d --build
+----
+====
 
 Try it out by executing the REST-call
 
