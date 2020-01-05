@@ -66,7 +66,7 @@ public class ReviewsServiceController {
 
     private ReviewDto toReviewDto(Review review) {
         final ReviewDto reviewDto = ReviewDto.of(review, serviceUtil.getServiceAddress());
-        LOGGER.info(String.format("Returning %s", reviewDto));
+        LOGGER.info("Returning {}", reviewDto);
         return reviewDto;
     }
 }

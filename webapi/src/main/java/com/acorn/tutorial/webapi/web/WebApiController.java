@@ -38,7 +38,7 @@ public class WebApiController {
 
     @GetMapping(path = "/webapi/items/{id}")
     public ItemInfoDto getItem(@PathVariable Long id) {
-        LOGGER.info(String.format("/webapi/items/%d called", id));
+        LOGGER.info("/webapi/items/{} called", id);
 
         Item item = itemsClient.getItem(id);
         List<Review> reviews = reviewsClient.getReviews("item", id);

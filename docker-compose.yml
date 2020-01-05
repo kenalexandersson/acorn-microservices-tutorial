@@ -21,7 +21,7 @@ services:
       config-server:
         condition: service_healthy
     ports:
-      - "8761:8080"
+      - "8761:8761"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://service-discovery-server:8761/actuator/health"]
       interval: 5s
