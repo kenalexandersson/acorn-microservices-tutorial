@@ -282,7 +282,7 @@ public class WebApiController {
 
     @GetMapping(path = "/webapi/items/{id}")
     public ItemInfoDto getItem(@PathVariable Long id) {
-        LOGGER.info(String.format("/webapi/items/%d called", id));
+        LOGGER.info("/webapi/items/{} called", id);
 
         return ItemInfoDto.of(null, null);
     }

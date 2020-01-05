@@ -494,7 +494,7 @@ public class ItemsServiceController {
 
     private ItemDto toItemDto(Item item) {
         final ItemDto itemDto = ItemDto.of(item, serviceUtil.getServiceAddress());
-        LOGGER.info(String.format("Returning %s", itemDto));
+        LOGGER.info("Returning {}", itemDto);
         return itemDto;
     }
 }
