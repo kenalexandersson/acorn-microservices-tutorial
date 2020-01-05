@@ -6,13 +6,13 @@ services:
     mem_limit: 350m
     ports:
       - "7777:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=native
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://config-server:7777/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://config-server:8080/actuator/health"]
       interval: 5s
       timeout: 5s
       retries: 10
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,native
 
   service-discovery-server:
     build: service-discovery-server
@@ -21,9 +21,9 @@ services:
       config-server:
         condition: service_healthy
     ports:
-      - "8761:8761"
+      - "8761:8080"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://service-discovery-server:8761/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://service-discovery-server:8080/actuator/health"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -38,6 +38,11 @@ services:
         condition: service_healthy
       service-discovery-server:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://items-service:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     environment:
       - SPRING_PROFILES_ACTIVE=docker
 
@@ -49,6 +54,11 @@ services:
         condition: service_healthy
       service-discovery-server:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://reviews-service:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     environment:
       - SPRING_PROFILES_ACTIVE=docker
 
@@ -60,6 +70,11 @@ services:
         condition: service_healthy
       service-discovery-server:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://webapi:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     environment:
       - SPRING_PROFILES_ACTIVE=docker
 
@@ -73,13 +88,13 @@ services:
         condition: service_healthy
     ports:
       - "20202:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker,localauth
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:20202/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://gateway:8080/actuator/health"]
       interval: 5s
       timeout: 5s
       retries: 10
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,localauth
 
   zipkin:
     image: openzipkin/zipkin

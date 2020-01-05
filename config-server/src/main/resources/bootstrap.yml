@@ -1,9 +1,14 @@
 spring:
   application:
     name: config-server
+
+  # Activating the built-in profile named "native", allows us to use local files
+  # as configuration storage instead
   profiles:
     active: native
 
+  # Setting the search location to directory "config" on classpath for the "native" profile
+  # (the source config files that after build ends up in dir config will go under src/main/resources/config)
   cloud:
     config:
       server:
@@ -12,4 +17,10 @@ spring:
 
 server:
   port: 7777
+---
+spring:
+  profiles: docker
+
+server:
+  port: 8080
 
