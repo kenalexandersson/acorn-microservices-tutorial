@@ -122,7 +122,7 @@ spring:
 ----
 +
 [NOTE]
-When starting in `spring.profiles.active=docker` mode, each service will call the config server using the hostname `config-server` (instead of localhost). The actual name `config-server` will get defined in the `docker-compose.yml`, which we will create shortly.
+When starting in `spring.profiles.active=docker` mode, each service will call the config server using the hostname alias `config-server` (instead of localhost). The actual name `config-server` will get defined in the `docker-compose.yml`, which we will create shortly.
 +
 . In `config-server/src/main/resource/config`, add a new spring profile to each `yml` file:
 +
@@ -144,7 +144,7 @@ eureka:
       defaultZone: http://service-discovery-server:8080/eureka/
 ----
 +
-This means that if we start each service with `spring.profiles.active=docker`, they will startup using port 8080.
+This means that if we start each service with `spring.profiles.active=docker`, they will startup using port 8080. The urls to `zipkin` and `eureka` is also given, using the host alias for each service (these are going to be defined in docker-compose.yml below).
 ____
 
 === Adding docker-compose.yml
@@ -269,13 +269,13 @@ services:
 +
 Worth noting here:
 
-* The root `services` has several childs, one for each of our microservices. Each service will get the name specified here, the container of `config-server` will be named _config-server_, and so on. This will also act as the hostname internally in the docker environment.
+* The root `services` has several childs, one for each of our microservices. Each service will get the name specified here, the container of `config-server` will be named _config-server_, and so on. This will also internally in the docker environment act as an alias to the hostname .
 
 * The `build` attribute points to each service root directory, in which a `Dockerfile` exist. So if `build` is used, `docker-compose` will build a docker image (if it does not already exist).
 
 * The `zipkin` service does not use `build`, instead it uses `image`, which means that `docker-compose` will pull that image and run it.
 
-* The `config-server`, `service-discovery-server`, `gateway` and `zipkin` maps their respective ports to 8080 (7777:8080, 8761:8080, 20202:8080 and 9411:8080) to the outside world. This allows us to connect via browsers or other clients by using _http://localhost:nnnn_. We are for example interested to still see the Eureka UI at http://localhost:8761, and also being able to access the application as usual from http://localhost:20202/webapi/items
+* The `config-server`, `service-discovery-server`, `gateway` and `zipkin` maps the ports we used before to the outside world (7777:8080, 8761:8080, 20202:8080 and 9411:8080). This allows us to connect via browsers or other clients by using _http://localhost:nnnn_. We are for example interested to still see the Eureka UI at http://localhost:8761, and of course also being able to access the application as usual from http://localhost:20202/webapi/items
 
 * All services except `zipkin` do startup with the profile _docker_ activated, this is done by using `environment` to set the variable `SPRING_PROFILES_ACTIVE=docker` (yet another way to specify a spring boot profile). This will eventually startup the services using port 8080, which we already exposed via the Dockerfile. Furthermore, these services will register themselves to `service-discovery-server` with their _hostname_ and port 8080. The actual hostname will be the container name or id given by Docker. So in short, the service discovery will be based on unique container names, which means that the ports can be 8080 for all services here, without any conflict.
 
