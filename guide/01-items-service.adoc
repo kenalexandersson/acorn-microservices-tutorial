@@ -92,7 +92,7 @@ image::overview-1-items-service.png[]
 === Creating the project
 There are actually two ways to create projects via Spring initializr, we can do it either by using the built in wizard in Intellij or using the standard way provided in  https://start.spring.io/. Each way is described below, pick the one you prefer.
 
-==== Spring iniitialzr by using Intellij
+==== Spring initialzr by using Intellij
 [quote]
 ____
 . Right-click acorn-microservices-tutorial in the Project pane, select `New -> Module...`
@@ -111,7 +111,7 @@ ____
 . Click `Finish`
 ____
 
-==== Spring iniitialzr by using website
+==== Spring initialzr by using website
 
 [quote]
 ____
