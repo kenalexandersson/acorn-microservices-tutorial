@@ -4,19 +4,19 @@ skinparam shadowing false
 
 frame localhost {
 
-    component localhost:7777 <<config-server>> as cs {
+    component config-server <<localhost:7777>> as cs {
     }
-    component localhost:8761 <<service-discovery-server>> as sds {
+    component service-discovery-server <<localhost:8761>> as sds {
     }
-    component localhost:20202 <<gateway>> as gateway {
+    component gateway <<localhost:20202>> as gateway {
     }
-    component localhost:8080 <<webapi>> as webapi {
+    component webapi <<localhost:8100>> as webapi {
     }
-    component localhost:8080 <<items-service>> as is {
+    component items-service <<localhost:8080>> as is {
     }
-    component localhost:9090 <<reviews-service>> as rs {
+    component reviews-service <<localhost:9090>> as rs {
     }
-    component localhost:9411 <<zipkin>> as zipkin {
+    component zipkin <<localhost:9411>> as zipkin {
     }
 
     cs <~ gateway

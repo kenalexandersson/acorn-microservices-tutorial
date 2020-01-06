@@ -4,10 +4,15 @@ skinparam shadowing false
 
 frame localhost {
 
-    agent client <<localhost:20202>> as gatewayclient
-    agent client <<localhost:7777>> as csclient
-    agent client <<localhost:8761>> as sdsclient
-    agent client <<localhost:9411>> as zipclient
+    agent client as gatewayclient
+    agent client as csclient
+    agent client as sdsclient
+    agent client as zipclient
+
+    note bottom of gatewayclient : calls localhost:20202
+    note top of csclient : calls localhost:7777
+    note bottom of sdsclient : calls localhost:8761
+    note bottom of zipclient : calls localhost:9411
 
     rectangle Docker {
 
