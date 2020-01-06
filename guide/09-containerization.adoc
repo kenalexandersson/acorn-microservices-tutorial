@@ -21,7 +21,7 @@ In this tutorial we have pretty much worked on all services at once. During real
 What we need is a way to quickly spin all services up and down as we see fit, so we can focus on development work.
 
 QA and testing::
-By containerizing the microservices it becomes easier to setup processes for integration, api and acceptance tests, like CI/CD pipelines and similar.
+By containerizing the microservices it becomes easier to setup processes for testing in CI/CD pipelines and similar.
 
 Prepared for Kubernetes deployment::
 If we containerize our services, we are one step away to deploy them onto a Kubernetes platform. Kubernetes is a portable, extensible, open-source platform for managing containerized workloads and services. It is becoming increasingly popular to deploy and run applications in this way. The topic of Kubernetes is however large enough for it's own tutorial, so we will not continue this discussion here.
