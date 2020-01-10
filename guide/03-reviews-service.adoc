@@ -130,9 +130,6 @@ logging:
     ROOT: INFO
     org.hibernate.stat: INFO
     org.hibernate.type: INFO
-
-server:
-  port: 9090
 ----
 +
 . Rebuild the `config-server`
@@ -163,6 +160,9 @@ spring:
     config:
       uri: http://localhost:7777
       fail-fast: true
+
+server:
+  port: 9090
 ----
 ____
 
