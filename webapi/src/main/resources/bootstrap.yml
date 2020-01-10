@@ -10,6 +10,8 @@ feign:
   hystrix:
     enabled: true
 
+server:
+  port: 8100
 ---
 spring:
   profiles: docker

@@ -6,6 +6,8 @@ spring:
       uri: http://localhost:7777
       fail-fast: true
 
+server:
+  port: 8080
 ---
 spring:
   profiles: docker
