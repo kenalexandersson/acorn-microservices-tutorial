@@ -127,6 +127,9 @@ eureka:
     register-with-eureka: true
     service-url:
       default-zone: http://localhost:8761/eureka
+
+server:
+  port: 8100
 ----
 +
 . Rebuild the `config-server`
@@ -161,9 +164,6 @@ spring:
 feign:
   hystrix:
     enabled: false
-
-server:
-  port: 8100
 ----
 ____
 
