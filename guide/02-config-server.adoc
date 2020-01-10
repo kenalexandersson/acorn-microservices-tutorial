@@ -364,9 +364,6 @@ spring:
     config:
       uri: http://localhost:7777
       fail-fast: true
-
-server:
-  port: 8080
 ----
 . Start the `items-service`.
 ____
