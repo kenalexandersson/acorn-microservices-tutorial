@@ -160,8 +160,7 @@ logging:
 +
 [source,bash]
 ----
-cd config-server
-mvn clean install -DskipTests
+mvn clean install -DskipTests -f config-server
 ----
 +
 . Restart `config-server`
@@ -772,7 +771,7 @@ There. Sorry for bashing this through like a steam train, but by now all code sh
 Note the annotation `@Profile("localauth")`. This means that the security is only enabled if we start the `gateway` with this profile active. Do this as follows:
 
 Run from IDE::
-IntelliJ: Open the Run Configuration for `GatewayApplication`, add  `spring.profiles.active=localauth` in _Override parameters_ section:
+IntelliJ: Open the Run Configuration for `GatewayApplication`, add  `localauth` in _Active profiles_ field:
 +
 image::gateway-localauth-run-configuration.png[]
 +

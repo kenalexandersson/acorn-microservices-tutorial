@@ -133,8 +133,7 @@ eureka:
 +
 [source,bash]
 ----
-cd config-server
-mvn clean install -DskipTests
+mvn clean install -DskipTests -f config-server
 ----
 +
 . Restart `config-server`
@@ -529,6 +528,8 @@ The complete `WebApiController` class should now look like this.
 
 [source,java]
 ----
+package com.acorn.tutorial.webapi.web;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;

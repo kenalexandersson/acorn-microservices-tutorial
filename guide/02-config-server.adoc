@@ -305,7 +305,7 @@ ____
 . Open `config-server/src/main/resources/bootstrap.yml`.
 . Change the `server.port` value to 7777
 . Restart the `config-server` and verify it runs on the new port
-. Restart the `items-service`. Expect to see a connection error log since the service tries to connect to port 8888.
+. Restart the `items-service`. Expect to see a connection warning log since the service tries to connect to port 8888.
 ____
 
 What's all this about using a file _bootstrap.yml_ instead of an _application.yml_? Well bootstrap.yml is used in Spring Cloud for loading properties into a _parent application context_. That _parent application context_ is loaded _before_ the ordinary _Spring application context_, which uses application.yml. This means that properties defined in bootstrap.yml takes precedence over properties defined in application.yml.
@@ -350,6 +350,9 @@ spring:
   cloud:
     config:
       fail-fast: true
+
+server:
+  port: 8080
 ----
 +
 . Restart the `items-service`. What happens?

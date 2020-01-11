@@ -177,8 +177,7 @@ eureka:
 +
 [source,bash]
 ----
-cd config-server
-mvn clean install -DskipTests
+mvn clean install -DskipTests -f config-server
 ----
 +
 . Restart `config-server`

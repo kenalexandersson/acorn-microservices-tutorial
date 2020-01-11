@@ -43,7 +43,7 @@ ____
 .. Wait for all applications to come up and start responding
 
 . Fetch items from webapi, `curl http://localhost:20202/webapi/items | jq` (or `curl http://localhost:20202/webapi/items -u frank:abc | jq` if security is enabled)
-.. (if webapi/items responds with an error, call it again)
+.. (if webapi/items responds with an error, or an empty list `[]`, call it again until a proper answer is received)
 
 . Look at the logs:
 +

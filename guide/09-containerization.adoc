@@ -286,6 +286,11 @@ ____
 
 === Run the whole application
 
+First of all, make sure to rebuild the whole project:
+
+[source,bash]
+mvn clean install -DskipTests
+
 [IMPORTANT]
 ====
 If any services are running (via Intellij or command line), make sure to turn them off! Also remember to turn off the zipkin docker image, if running.
