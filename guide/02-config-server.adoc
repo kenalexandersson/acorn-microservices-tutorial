@@ -198,9 +198,6 @@ logging:
     ROOT: INFO
     org.hibernate.stat: INFO
     org.hibernate.type: INFO
-
-server:
-  port: 8080
 ----
 +
 . Make sure that the moved configuration is totally removed from `items-service/src/main/resources/application.yml`, it should now look like this:
@@ -210,6 +207,9 @@ server:
 spring:
   application:
     name: items-service
+
+server:
+  port: 8080
 ----
 ____
 
