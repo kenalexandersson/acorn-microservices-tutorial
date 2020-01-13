@@ -16,10 +16,7 @@ Welcome to the microservices tutorial.
 Things you should do before the session: <<guide/prerequisites.adoc#,Prerequisites>>
 
 == Tutorial
-Here is the entry point to the tutorial we will do in the session
-
-[IMPORTANT]
-Do not start doing the tutorial in advance! Wait until you are physically seated in the classroom!
+Here is the entry point to the tutorial we will do.
 
 Step one:: `git clone https://github.com/kenalexandersson/acorn-microservices-tutorial.git`
 
