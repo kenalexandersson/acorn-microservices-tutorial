@@ -55,11 +55,11 @@ rm -r */mvn* */.mvn */.gitignore */HELP.md
 
 This will remove these files:
 
-- items-service/.mvn (the whole dir)
-- items-service/.gitignore
-- items-service/HELP.md
-- items-service/mvnw
-- items-service/mvnw.cmd
+- webapi/.mvn (the whole dir)
+- webapi/.gitignore
+- webapi/HELP.md
+- webapi/mvnw
+- webapi/mvnw.cmd
 ====
 
 Next edit the parent pom.xml so that it becomes aware of the child project:
