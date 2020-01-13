@@ -159,7 +159,7 @@ The first thing to configure is to hook up the Service Discovery Server with the
 
 [quote]
 ____
-. Create the file `config-server/src/main/resource/config/service-discovery-server.yml`
+. Create the file `config-server/src/main/resources/config/service-discovery-server.yml`
 . Add config to file:
 +
 [source,yml]
@@ -188,7 +188,7 @@ Next create the `bootstrap.yml` and add config for binding to `config-server`
 [quote]
 ____
 . Delete `service-discovery-server/src/main/resources/application.properties`
-. Create the file `service-discovery-server/src/main/resource/bootstrap.yml`
+. Create the file `service-discovery-server/src/main/resources/bootstrap.yml`
 . Add config to file:
 +
 [source,yml]

@@ -117,7 +117,7 @@ The first thing to configure is to hook up the WebApi with the Config Server.
 
 [quote]
 ____
-. Create the file `config-server/src/main/resource/config/webapi.yml`
+. Create the file `config-server/src/main/resources/config/webapi.yml`
 . Add config to file:
 +
 [source,yml]
@@ -144,7 +144,7 @@ Next create the `webapi/src/main/resources/bootstrap.yml` and add config for bin
 [quote]
 ____
 . Delete `webapi/src/main/resources/application.properties`
-. Create the file `webapi/src/main/resource/bootstrap.yml`
+. Create the file `webapi/src/main/resources/bootstrap.yml`
 . Add config to file:
 +
 [source,yml]

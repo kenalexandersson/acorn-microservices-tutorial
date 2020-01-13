@@ -119,8 +119,8 @@ In our case, we need to configure the Config Server to use the native file stora
 
 [quote]
 ____
-. Remove the file `config-server/src/main/resource/application.properties`
-. Create file `config-server/src/main/resource/bootstrap.yml` and add the below content.
+. Remove the file `config-server/src/main/resources/application.properties`
+. Create file `config-server/src/main/resources/bootstrap.yml` and add the below content.
 +
 .Content of bootstrap.yml
 [source,yml]
@@ -175,8 +175,8 @@ image::overview-2-config-server.png[]
 
 [quote]
 ____
-. Create the file `config-server/src/main/resource/config/items-service.yml`
-. Cut and paste the below section from `items-services/src/main/resources/application.yml` to `config-server/src/main/resource/config/items-service.yml`:
+. Create the file `config-server/src/main/resources/config/items-service.yml`
+. Cut and paste the below section from `items-services/src/main/resources/application.yml` to `config-server/src/main/resources/config/items-service.yml`:
 +
 [source,yml]
 ----

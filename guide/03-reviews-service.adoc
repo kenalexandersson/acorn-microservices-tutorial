@@ -49,11 +49,11 @@ rm -r */mvn* */.mvn */.gitignore */HELP.md
 
 This will remove these files:
 
-- items-service/.mvn (the whole dir)
-- items-service/.gitignore
-- items-service/HELP.md
-- items-service/mvnw
-- items-service/mvnw.cmd
+- reviews-service/.mvn (the whole dir)
+- reviews-service/.gitignore
+- reviews-service/HELP.md
+- reviews-service/mvnw
+- reviews-service/mvnw.cmd
 ====
 
 Next edit the parent pom.xml so that it becomes aware of the child project:
@@ -107,7 +107,7 @@ The configuration needed for the `reviews-service` is pretty much identical with
 
 [quote]
 ____
-. Create the file `config-server/src/main/resource/config/reviews-service.yml`
+. Create the file `config-server/src/main/resources/config/reviews-service.yml`
 . Add config to file:
 +
 [source,yml]
@@ -147,7 +147,7 @@ Next create the reviews-service's `bootstrap.yml` and add config for binding to 
 [quote]
 ____
 . Delete `reviews-service/src/main/resources/application.properties`
-. Create the file `reviews-service/src/main/resource/bootstrap.yml`
+. Create the file `reviews-service/src/main/resources/bootstrap.yml`
 . Add config to file:
 +
 [source,yml]
@@ -245,7 +245,7 @@ Some nice dummy data would be good to have. As you remember, this is achieved by
 
 [quote]
 ____
-. Create the file `reviews-service/src/main/resource/data.sql`
+. Create the file `reviews-service/src/main/resources/data.sql`
 . Add some reviews:
 +
 [source,sql]

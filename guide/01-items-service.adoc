@@ -417,7 +417,7 @@ There is one final automagic thing to do before we leave the persistence topic f
 
 [quote]
 ____
-. Create the file `items-service/src/main/resource/data.sql`
+. Create the file `items-service/src/main/resources/data.sql`
 . Add some items:
 +
 [source,sql]
