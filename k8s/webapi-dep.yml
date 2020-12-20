@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapi
+  template:
+    metadata:
+      name: webapi
+      labels:
+        app: webapi
+    spec:
+      containers:
+        - name: reviews
+          image: acorn/webapi:1.0.0-SNAPSHOT
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+            - containerPort: 8090
+          env:
+            - name: services.items.url
+              value: "items-svc:80"
+            - name: services.reviews.url
+              value: "reviews-svc:80"
+
+# eval $(minikube docker-env)

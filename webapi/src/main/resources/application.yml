@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: webapi
+
+logging:
+  level:
+    ROOT: INFO
+    org.hibernate.stat: INFO
+    org.hibernate.type: INFO
+
+services:
+  items:
+    url: ""
+  reviews:
+    url: ""
+
+server:
+  port: 8080
+
+management:
+  server:
+    port: 8090
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  endpoint:
+    health:
+      enabled: true

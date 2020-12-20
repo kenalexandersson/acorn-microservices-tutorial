@@ -8,6 +8,10 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <properties>
+        <base.image>adoptopenjdk/openjdk11:jre-11.0.6_10-alpine</base.image>
+    </properties>
+
     <modules>
         <module>util</module>
         <module>config-server</module>

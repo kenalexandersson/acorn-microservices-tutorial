@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.Collections;
 import java.util.List;
 
-@FeignClient(name = "reviews-service", fallbackFactory = ReviewsClient.ReviewsServiceFallbackFactory.class)
+@FeignClient(name = "reviews-service", url="${services.reviews.url}", fallbackFactory = ReviewsClient.ReviewsServiceFallbackFactory.class)
 public interface ReviewsClient {
 
     @GetMapping("/reviews/{type}")

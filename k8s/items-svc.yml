@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: items-svc
+  labels:
+    app: items-svc
+spec:
+  type: ClusterIP
+  ports:
+    - name: items-svc-port
+      port: 80
+      targetPort: 8080
+  selector:
+    app: items

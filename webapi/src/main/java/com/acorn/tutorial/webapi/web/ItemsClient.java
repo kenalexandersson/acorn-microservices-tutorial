@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.Collections;
 import java.util.List;
 
-@FeignClient(name = "items-service", fallbackFactory = ItemsClient.ItemsServiceFallbackFactory.class)
-@RibbonClient(name = "items-service")
+@FeignClient(name = "items-service", url="${services.items.url}", fallbackFactory = ItemsClient.ItemsServiceFallbackFactory.class)
 public interface ItemsClient {
 
     @GetMapping("/items")
